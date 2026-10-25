@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#b4486c">
-<meta name="description" content="Iškarpų ir eilučių skaičiuoklė Silver Reed SK280 ir SK155 mezgimo mašinoms">
+<meta name="description" content="Garna – iškarpos, eilutės, raštai ir siūlų planavimas mezgimo mašinoms ir rankiniam mezgimui">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>body{margin:0}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
-<title>Silver Reed pagalbininkas</title>
+<title>Garna – mezgimo pagalbininkė</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -137,7 +137,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 @media (max-width:640px){
   body{font-size:16px}
   .brand h1{font-size:1.25rem}
-  header.top .seg{width:100%}
+  header.top .seg:not(.langs):not(.machquick){width:100%}
   .appswitch{width:auto;min-height:38px;padding:6px 12px;font-size:.85rem}
   .brand span{display:none}
   header.top .seg button{flex:1}
@@ -219,6 +219,25 @@ details.grp{border-radius:var(--r-sm)}
 .appswitch:hover{transform:translateY(-1px)}
 .mcard{border-radius:var(--r)!important}
 header.top .seg.langs{width:auto!important;padding:3px}
+.aw-short{display:none}
+.machsel{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.machbtn{display:inline-flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 14px;cursor:pointer;box-shadow:var(--shadow);font:inherit;text-align:left}
+.machbtn b{display:block;font-size:.95rem}.machbtn small{display:block;font-size:.74rem;color:var(--muted)}.machbtn .mi{font-size:1.2rem}
+.machquick button{padding:6px 12px}
+.machgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.machcard{position:relative;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--sunk)}
+.machcard.on{border-color:var(--accent);background:var(--accent-soft)}
+.machpick{display:flex;flex-direction:column;gap:2px;width:100%;text-align:left;background:none;border:0;padding:12px 44px 12px 12px;cursor:pointer;color:var(--ink);font:inherit}
+.machpick span{font-size:.8rem;color:var(--muted)}
+.machstar{position:absolute;top:8px;right:8px;border:0;background:none;font-size:1.3rem;cursor:pointer;color:var(--accent)}
+@media (max-width:640px){.machsel{width:100%}.machbtn{width:100%}}
+nav.tabs{align-items:center}
+.navlbl{font-size:.68rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);padding:0 6px 0 2px;white-space:nowrap;flex:0 0 auto}
+nav.tabs.steps{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--bg)}
+nav.tabs.tools{position:static;padding-top:2px;margin-top:-6px;border-top:1px dashed var(--line)}
+nav.tabs.tools button{font-size:.84rem;padding:6px 12px;background:transparent;border:1px solid var(--line)!important}
+nav.tabs.tools button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)!important;box-shadow:none}
+@media (max-width:640px){.aw-long{display:none}.aw-short{display:inline}header.top{gap:8px 10px}}
 input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);vertical-align:-4px}
 .projbar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:.86rem;color:var(--muted)}
 .projbar b{color:var(--ink)}
@@ -2281,7 +2300,22 @@ const I18N_EN = {
   "Žingsniai": "Steps",
   "Žingsnis # iš # ·": "Step # of # ·",
   "＋ Naujas": "＋ New",
-  "＋ Naujas projektas": "＋ New project"
+  "＋ Naujas projektas": "＋ New project",
+  "Darbo eiga": "Workflow",
+  "Skaičiuoklės": "Calculators",
+  "Silver Reed SK#": "Silver Reed SK#",
+  "# adatų · standartinis # mm · antra lova": "# needles · standard # mm · ribber",
+  "Mezgimo mašina": "Knitting machine",
+  "Pasirinkite, kuria mašina megzite. Pažymėkite ☆ savo mašinas – jos bus rodomos viršuje greitam perjungimui.": "Choose the machine you will knit on. Mark your machines with ☆ – they will be shown at the top for quick switching.",
+  "Silver Reed": "Silver Reed",
+  "Kortinė (perforuota korta)": "Punch card machine",
+  "Galima antra adatų lova · korta # ak.": "Ribber possible · card # sts",
+  "Be antros adatų lovos · korta # ak.": "No ribber · card # sts",
+  "Ateityje bus pridėta daugiau mašinų: Brother, Dubied, Knitking, Singer, Passap, Toyota ir kitos.": "More machines will be added: Brother, Dubied, Knitking, Singer, Passap, Toyota and others.",
+  "Mano mašinos": "My machines",
+  "Mano mašina": "My machine",
+  "Garna": "Garna",
+  "Mezgimo pagalbininkė · mėginys # ak. × # eil. / # cm": "Knitting companion · gauge # sts × # rows / # cm"
 };
 
 const I18N_NB = {
@@ -4281,13 +4315,28 @@ const I18N_NB = {
   "Žingsniai": "Trinn",
   "Žingsnis # iš # ·": "Trinn # av # ·",
   "＋ Naujas": "＋ Nytt",
-  "＋ Naujas projektas": "＋ Nytt prosjekt"
+  "＋ Naujas projektas": "＋ Nytt prosjekt",
+  "Darbo eiga": "Arbeidsflyt",
+  "Skaičiuoklės": "Kalkulatorer",
+  "Silver Reed SK#": "Silver Reed SK#",
+  "# adatų · standartinis # mm · antra lova": "# nåler · standard # mm · vrangbordseng",
+  "Mezgimo mašina": "Strikkemaskin",
+  "Pasirinkite, kuria mašina megzite. Pažymėkite ☆ savo mašinas – jos bus rodomos viršuje greitam perjungimui.": "Velg maskinen du skal strikke på. Merk maskinene dine med ☆ – de vises øverst for raskt bytte.",
+  "Silver Reed": "Silver Reed",
+  "Kortinė (perforuota korta)": "Hullkortmaskin",
+  "Galima antra adatų lova · korta # ak.": "Vrangbordseng mulig · kort # m.",
+  "Be antros adatų lovos · korta # ak.": "Uten vrangbordseng · kort # m.",
+  "Ateityje bus pridėta daugiau mašinų: Brother, Dubied, Knitking, Singer, Passap, Toyota ir kitos.": "Flere maskiner kommer: Brother, Dubied, Knitking, Singer, Passap, Toyota og andre.",
+  "Mano mašinos": "Mine maskiner",
+  "Mano mašina": "Min maskin",
+  "Garna": "Garna",
+  "Mezgimo pagalbininkė · mėginys # ak. × # eil. / # cm": "Strikkehjelper · strikkefasthet # m. × # rader / # cm"
 };
 
 /*CORE*/
 const MACHINES = {
-  SK280:{id:'SK280', name:'SK280', full:'Silver Reed SK280', needles:200, pitch:4.5, kind:'standartinis 4,5 mm', ribber:true, card:24},
-  SK155:{id:'SK155', name:'SK155', full:'Silver Reed SK155', needles:110, pitch:9, kind:'stambus 9 mm', ribber:false, card:12}
+  SK280:{id:'SK280', brand:'Silver Reed', type:'Kortinė (perforuota korta)', name:'SK280', full:'Silver Reed SK280', needles:200, pitch:4.5, kind:'standartinis 4,5 mm', ribber:true, card:24},
+  SK155:{id:'SK155', brand:'Silver Reed', type:'Kortinė (perforuota korta)', name:'SK155', full:'Silver Reed SK155', needles:110, pitch:9, kind:'stambus 9 mm', ribber:false, card:12}
 };
 const SHOULDERS = [
   ['japon','Japoniškas petys (trumposios eilės)'],
@@ -5570,6 +5619,17 @@ function fitCap(gk){
 }
 
 /* ---------- PIEŠIMAS ---------- */
+/* --- mašinos pasirinkimas: pagal gamintoją, su „mano mašinos“ sąrašu (plečiamas ateityje) --- */
+const MACH_PLANNED=['Brother','Dubied','Knitking','Singer','Passap','Toyota'];
+function myMach(){ const m=(S.myMachines||[]).filter(id=>MACHINES[id]); return m; }
+function machHeader(){ const m=MACHINES[S.machine]; const mine=myMach();
+  const quick = mine.length>1 ? `<div class="seg machquick" role="group" aria-label="Mano mašinos">${mine.map(id=>`<button data-mach="${id}" aria-pressed="${S.machine===id}">${esc(MACHINES[id].name)}</button>`).join('')}</div>` : '';
+  return `<div class="machsel"><button class="machbtn" id="machBtn" aria-expanded="${!!S.machOpen}"><span class="mi" aria-hidden="true">🧵</span><span><b>${esc(m.brand||'')} ${esc(m.name)}</b><small>${m.needles} adatų · ${esc(m.kind)}${m.ribber?' · antra lova':''}</small></span><span aria-hidden="true">${S.machOpen?'▴':'▾'}</span></button>${quick}</div>`; }
+function machPanel(){ const brands={}; Object.values(MACHINES).forEach(x=>{ (brands[x.brand||'Kita']=brands[x.brand||'Kita']||[]).push(x); }); const mine=myMach();
+  return `<section class="panel machpanel noprint"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Mezgimo mašina</h2><button class="btn" id="machClose">Uždaryti</button></div>
+   <p class="note">Pasirinkite, kuria mašina megzite. Pažymėkite ☆ savo mašinas – jos bus rodomos viršuje greitam perjungimui.</p>
+   ${Object.entries(brands).map(([b,list])=>`<h3>${esc(b)}</h3><div class="machgrid">${list.map(x=>`<div class="machcard ${S.machine===x.id?'on':''}"><button class="machpick" data-mach="${x.id}"><b>${esc(x.name)}</b><span>${esc(x.type||'')}</span><span>${x.needles} adatų · ${esc(x.kind)}</span><span>${x.ribber?'Galima antra adatų lova':'Be antros adatų lovos'} · korta ${x.card} ak.</span></button><button class="machstar" data-star="${x.id}" aria-pressed="${mine.includes(x.id)}" title="Mano mašina">${mine.includes(x.id)?'★':'☆'}</button></div>`).join('')}</div>`).join('')}
+   <p class="note" style="margin-top:12px">Ateityje bus pridėta daugiau mašinų: ${MACH_PLANNED.map(esc).join(', ')} ir kitos.</p></section>`; }
 function projLabel(){ const G=GARMENTS[S.garment]; const c=S.cur&&S.cur.gk===S.garment?S.cur:null;
   const anyEdited=Object.keys(S.edited||{}).some(k=>k.startsWith(S.garment+'/'));
   const base=`Projektas: <b>${esc(G?G.name:'')}</b>${c?` · ${esc(c.who)} ${esc(c.size)}${c.fit?' · '+esc(c.fit):''}`:(anyEdited?' · jūsų matmenys':' · <span style="color:var(--accent)">pavyzdiniai matmenys</span>')}`;
@@ -5579,25 +5639,32 @@ function render(){
   const m=MACHINES[S.machine], g=S.gauges[S.machine];
   $('#app').innerHTML = `
   <header class="top">
-    <div class="brand"><h1>Silver Reed pagalbininkas</h1><span>Iškarpos ir eilutės mezgimo mašinai · mėginys ${g.sts} ak. × ${g.rows} eil. / 10 cm</span></div>
-    <a class="appswitch noprint" href="${standalone?'spalvos/':'https://imgroupeu-lgtm.github.io/silver-reed-pagalbininkas/spalvos/'}"${standalone?'':' target="_blank" rel="noopener"'}><span class="dots"><i style="background:#c0392b"></i><i style="background:#e6b422"></i><i style="background:#2e86c1"></i></span>Spalvų pagalbininkas <b>→</b></a>
+    <div class="brand"><h1>Garna</h1><span>Mezgimo pagalbininkė · mėginys ${g.sts} ak. × ${g.rows} eil. / 10 cm</span></div>
+    <a class="appswitch noprint" href="${standalone?'spalvos/':'https://imgroupeu-lgtm.github.io/silver-reed-pagalbininkas/spalvos/'}"${standalone?'':' target="_blank" rel="noopener"'}><span class="dots"><i style="background:#c0392b"></i><i style="background:#e6b422"></i><i style="background:#2e86c1"></i></span><span class="aw-long">Spalvų pagalbininkas</span><span class="aw-short">Spalvos</span> <b>→</b></a>
     ${typeof langPicker==='function'?langPicker():''}
-    <div class="seg" role="group" aria-label="Mašina">
-      ${Object.values(MACHINES).map(x=>`<button data-mach="${x.id}" aria-pressed="${S.machine===x.id}">${x.name}<small>${x.needles} adatų · ${x.kind}</small></button>`).join('')}
-    </div>
+    ${machHeader()}
   </header>
+  ${S.machOpen?machPanel():''}
   <div class="projbar">${projLabel()}</div>
-  <nav class="tabs" role="tablist">
-    ${[...(typeof viewWizard==='function'?[['pradzia','＋ Naujas projektas']]:[]),['meginys','1. Mėginys'],['konfig','2. Modelis'],['iskarpos','3. Detalės'],['masina','4. Mezgimas'],['rastai','Raštai'],...(typeof viewRankinis==='function'?[['rankinis','Rankinis mezgimas']]:[]),...(typeof viewStash==='function'?[['stash','Mano siūlai']]:[]),['projektai','Išsaugoti'],['skaiciuokles','Įrankiai'],['pagalba','Pagalba']].map(([id,l])=>`<button role="tab" data-tab="${id}" aria-selected="${S.tab===id}">${l}</button>`).join('')}
+  <nav class="tabs steps" role="tablist" aria-label="Darbo eiga">
+    <span class="navlbl">Darbo eiga</span>
+    ${[...(typeof viewWizard==='function'?[['pradzia','＋ Naujas projektas']]:[]),['meginys','1. Mėginys'],['konfig','2. Modelis'],['iskarpos','3. Detalės'],['masina','4. Mezgimas']].map(([id,l])=>`<button role="tab" data-tab="${id}" aria-selected="${S.tab===id}">${l}</button>`).join('')}
+  </nav>
+  <nav class="tabs tools" role="tablist" aria-label="Įrankiai">
+    <span class="navlbl">Įrankiai</span>
+    ${[['rastai','<span aria-hidden="true">🎨</span> Raštai'],...(typeof viewRankinis==='function'?[['rankinis','<span aria-hidden="true">🧶</span> Rankinis mezgimas']]:[]),...(typeof viewStash==='function'?[['stash','<span aria-hidden="true">🧺</span> Mano siūlai']]:[]),['projektai','<span aria-hidden="true">💾</span> Išsaugoti'],['skaiciuokles','<span aria-hidden="true">🧮</span> Skaičiuoklės'],['pagalba','<span aria-hidden="true">❓</span> Pagalba']].map(([id,l])=>`<button role="tab" data-tab="${id}" aria-selected="${S.tab===id}">${l}</button>`).join('')}
   </nav>
   <main id="view"></main>`;
-  document.querySelectorAll('[data-mach]').forEach(b=>b.onclick=()=>{S.machine=b.dataset.mach; save(); render();});
+  document.querySelectorAll('[data-mach]').forEach(b=>b.onclick=()=>{S.machine=b.dataset.mach; S.machOpen=false; save(); render();});
+  const mb=$('#machBtn'); if(mb) mb.onclick=()=>{ S.machOpen=!S.machOpen; save(); render(); };
+  const mc=$('#machClose'); if(mc) mc.onclick=()=>{ S.machOpen=false; save(); render(); };
+  document.querySelectorAll('[data-star]').forEach(b=>b.onclick=()=>{ const id=b.dataset.star; const m=new Set(S.myMachines||[]); m.has(id)?m.delete(id):m.add(id); S.myMachines=[...m]; save(); render(); });
   document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab; save(); render();});
   if(typeof wzBindBar==='function') wzBindBar();
   if(S.tab==='pradzia' && typeof viewWizard!=='function') S.tab='meginys';
   ({pradzia:(typeof viewWizard==='function'?viewWizard:viewMeginys), pagalba:viewPagalba, konfig:viewKonfig, iskarpos:viewIskarpos, meginys:viewMeginys, skaiciuokles:viewCalc, projektai:viewProjects, masina:viewMasina, rastai:viewRastai, rankinis:(typeof viewRankinis==='function'?viewRankinis:viewMeginys), stash:(typeof viewStash==='function'?viewStash:viewMeginys)})[S.tab]();
   if(typeof bindLang==='function') bindLang();
-  try{ const nv=document.querySelector('nav.tabs'), sel=nv&&nv.querySelector('[aria-selected="true"]'); if(nv&&sel&&nv.scrollWidth>nv.clientWidth) nv.scrollLeft=Math.max(0, sel.offsetLeft-nv.clientWidth/2+sel.offsetWidth/2); }catch(e){}
+  try{ document.querySelectorAll('nav.tabs').forEach(nv=>{ const sel=nv.querySelector('[aria-selected="true"]'); if(sel&&nv.scrollWidth>nv.clientWidth) nv.scrollLeft=Math.max(0, sel.offsetLeft-nv.clientWidth/2+sel.offsetWidth/2); }); }catch(e){}
   }catch(err){
     $('#app').innerHTML=`<div class="panel" style="margin-top:20px"><h2>Programa susidūrė su klaida</h2><p class="note">Dažniausiai taip nutinka dėl senų išsaugotų duomenų. Paspauskite mygtuką – programa grįš į pradinę būseną (išsaugoti projektai bus ištrinti).</p><p class="note" style="font-family:var(--f-mono)">${esc(err&&err.message||err)}</p><button class="btn primary" id="hardReset">Atkurti programą</button></div>`;
     const hr=document.getElementById('hardReset'); if(hr) hr.onclick=()=>{ try{ localStorage.removeItem(KEY); }catch(e){} S=freshState(); render(); };
