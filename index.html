@@ -40,6 +40,9 @@ header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-
 .brand{display:flex;flex-direction:column;gap:2px}
 .brand h1{font-family:var(--f-display);font-weight:800;font-size:1.45rem;letter-spacing:.01em;margin:0;line-height:1.1}
 .brand span{font-size:.82rem;color:var(--muted)}
+.appswitch{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:8px 16px;border:2px solid var(--accent);border-radius:999px;color:var(--accent);font-weight:700;font-size:.95rem;text-decoration:none;background:transparent}
+.appswitch:hover,.appswitch:focus-visible{background:var(--accent);color:#fff}
+.appswitch .dots{display:inline-flex}.appswitch .dots i{width:14px;height:14px;border-radius:50%;margin-left:-4px;border:2px solid #fff}.appswitch .dots i:first-child{margin-left:0}
 .seg{display:inline-flex;background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:3px;gap:3px;flex-wrap:wrap}
 .seg button{border:0;background:transparent;color:var(--ink);font:600 .9rem var(--f-body);padding:7px 12px;border-radius:6px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
@@ -127,6 +130,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
   body{font-size:16px}
   .brand h1{font-size:1.25rem}
   header.top .seg{width:100%}
+  .appswitch{width:100%;justify-content:center}
   header.top .seg button{flex:1}
   nav.tabs{flex-wrap:wrap;overflow:visible;gap:2px 4px}
   nav.tabs button{padding:9px 9px;font-size:.88rem}
@@ -154,8 +158,6 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 @media (prefers-reduced-motion:no-preference){.btn,.seg button{transition:background .15s,border-color .15s}}
 </style>
 
-</head>
-<body>
 <div class="wrap" id="app"></div>
 
 <script>
@@ -855,7 +857,8 @@ function render(){
   const m=MACHINES[S.machine], g=S.gauges[S.machine];
   $('#app').innerHTML = `
   <header class="top">
-    <div class="brand"><h1>Silver Reed pagalbininkas</h1><span>Iškarpos ir eilutės mezgimo mašinai · mėginys ${g.sts} ak. × ${g.rows} eil. / 10 cm${standalone?' · <a href="spalvos/" style="color:var(--accent)">Spalvų pagalbininkas →</a>':''}</span></div>
+    <div class="brand"><h1>Silver Reed pagalbininkas</h1><span>Iškarpos ir eilutės mezgimo mašinai · mėginys ${g.sts} ak. × ${g.rows} eil. / 10 cm</span></div>
+    <a class="appswitch noprint" href="${standalone?'spalvos/':'https://imgroupeu-lgtm.github.io/silver-reed-pagalbininkas/spalvos/'}"${standalone?'':' target="_blank" rel="noopener"'}><span class="dots"><i style="background:#c0392b"></i><i style="background:#e6b422"></i><i style="background:#2e86c1"></i></span>Spalvų pagalbininkas <b>→</b></a>
     <div class="seg" role="group" aria-label="Mašina">
       ${Object.values(MACHINES).map(x=>`<button data-mach="${x.id}" aria-pressed="${S.machine===x.id}">${x.name}<small>${x.needles} adatų · ${x.kind}</small></button>`).join('')}
     </div>

@@ -34,7 +34,9 @@ body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:1
 header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
 header h1{font-family:var(--f-display);font-weight:800;font-size:1.4rem;margin:0}
 header span{font-size:.82rem;color:var(--muted)}
-header a{color:var(--accent);font-size:.88rem}
+header a.appswitch{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 16px;border:2px solid var(--accent);border-radius:999px;color:var(--accent);font-weight:700;font-size:.95rem;text-decoration:none}
+header a.appswitch:hover,header a.appswitch:focus-visible{background:var(--accent);color:#fff}
+@media (max-width:640px){header a.appswitch{width:100%;justify-content:center}}
 nav{display:flex;gap:4px;border-bottom:2px solid var(--line);flex-wrap:wrap;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5}
 nav button{border:0;background:none;color:var(--muted);font:600 .95rem var(--f-body);padding:10px 12px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
 nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
@@ -89,8 +91,6 @@ label.f select{border:1px solid var(--line);border-radius:7px;background:var(--s
 @media (max-width:640px){ body{font-size:16px} .btn{min-height:44px;flex:1 1 auto} .axis{grid-template-columns:90px minmax(0,1fr) 40px} }
 </style>
 
-</head>
-<body>
 <div class="wrap" id="app"></div>
 
 <script>
@@ -221,7 +221,7 @@ function kmeans(slot, k, wb){
 /* ---------- PIEŠIMAS ---------- */
 function render(){
   try{
-  $('#app').innerHTML=`<header><div><h1>Spalvų pagalbininkas</h1><span>Siūlų spalvų derinimas ir 12 spalvinių tipų</span></div><a href="../">← Mezgimo programa</a></header>
+  $('#app').innerHTML=`<header><div><h1>Spalvų pagalbininkas</h1><span>Siūlų spalvų derinimas ir 12 spalvinių tipų</span></div><a class="appswitch" href="${window.top===window.self?'../':'https://imgroupeu-lgtm.github.io/silver-reed-pagalbininkas/'}"${window.top===window.self?'':' target="_blank" rel="noopener"'}><b>←</b> 🧶 Mezgimo programa</a></header>
    <nav>${[['siulai','Siūlų spalvos'],['tipas','Spalvinis tipas'],['apie','Kaip veikia']].map(([id,l])=>`<button data-tab="${id}" aria-selected="${S.tab===id}">${l}</button>`).join('')}</nav>
    <main id="view"></main>`;
   document.querySelectorAll('nav [data-tab]').forEach(b=>b.onclick=()=>{ S.tab=b.dataset.tab; save(); render(); });
