@@ -1,13 +1,17 @@
 # Silver Reed pagalbininkas
 
-Iškarpų ir eilučių skaičiuoklė Silver Reed **SK280** (200 adatų, 4,5 mm) ir **LK150** (150 adatų, 6,5 mm) mezgimo mašinoms. Veikia telefone ir kompiuteryje, įdiegta – ir be interneto.
+Iškarpų ir eilučių skaičiuoklė Silver Reed **SK280** (200 adatų, 4,5 mm) ir **SK155** (110 adatų, 9 mm) mezgimo mašinoms. Veikia telefone ir kompiuteryje, įdiegta – ir be interneto.
 
-## Ką moka (2 versija)
+## Ką moka (3 versija)
 
 - **Iškarpos**: megztinis, kardiganas, suknelė, kelnės. Rankovės: įsiūta (varpo formos viršus), reglanas, nuleistas petys. Iškirptė apvali arba V.
 - **Pečiai**: japoniškas (trumposios eilės, sujungimas be siūlės), paprastas (laiptuotas uždarymas), tiesus. Nugaros ir priekio pečio akys visada sutampa.
 - **Trumposios eilės**: krūtinės įsiuvės, kelnių nugaros pakėlimas.
 - **Apykaklės**: juosta, pusgolfis, golfas (viengubas ar dvigubas); kardiganui – sagų juostos su skylučių vietomis.
+- **Konfigūratorius**: moteris, vyras, mergaitė, berniukas; Craft Yarn Council dydžiai; 5 prigludimo lygiai; visi dydžiai vienu mygtuku.
+- **Švarkas**: atlapai, šalikinė apykaklė, užlaida, sagos, kišenės.
+- **Anatominis reglanas**: linija iš 3 dalių (uždarymas, statesnė dalis, švelnesnė dalis).
+- **Pagal SK280 instrukciją**: adatų padėtys A–D, Russel svirtelės, dalinis mezgimas, mėginio metodas, uždarymas, sagų skylutės, pečių sujungimas ant mašinos.
 - **Projektai ir dydžiai**: išsaugokite kelis dydžius ir palyginkite.
 - **Eilutė po eilutės** pagal eilių skaitiklį (RC): kur, kada ir kiek uždaryti, mažinti, didinti ar perkelti į laikymo padėtį (HP). Uždarymai planuojami karietėlės pusėje, laikymo padėtis – priešingoje.
 - **Rankovės viršaus patikra**: lygina rankovės viršaus kraštą su iškarpos ilgiu ir gali suderinti aukštį automatiškai.
