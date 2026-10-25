@@ -233,6 +233,52 @@ header.top .seg.langs button{flex:0 0 auto!important;padding:5px 10px;min-height
   #view .grid>*:nth-child(2){animation-delay:.06s}
   @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 }
+/* ===== Naujo projekto vedlys ===== */
+.wz-prog{list-style:none;margin:14px 0 6px;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
+.wz-prog button{width:100%;display:flex;flex-direction:column;gap:6px;border:0;background:none;padding:4px 0;cursor:pointer;color:var(--muted);font:600 .74rem var(--f-body);text-align:left;min-height:28px}
+.wz-prog button:disabled{cursor:default}
+.wz-prog i{display:block;height:7px;border-radius:99px;background:var(--line)}
+.wz-prog .done i{background:var(--accent-2);opacity:.75}
+.wz-prog .cur i{background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.wz-prog .cur button{color:var(--accent)}
+.wz-prog span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wz-cur{margin:0 0 6px;font-size:.86rem;color:var(--muted)}
+.wz-cur b{color:var(--ink)}
+.wz-ex{margin:0 0 8px;font-size:.8rem;color:var(--warn);background:var(--warn-bg);border-radius:var(--r-sm);padding:6px 10px}
+.wz-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.wz-cards.wz-small{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.wz-card{display:flex;align-items:center;gap:10px;text-align:left;min-width:0;min-height:58px;border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:var(--r-sm);padding:10px 12px;cursor:pointer;font:700 .95rem var(--f-body);transition:border-color .2s,background .2s,box-shadow .2s}
+.wz-card>span{min-width:0;overflow-wrap:anywhere}
+.wz-card small{display:block;font-weight:400;font-size:.78rem;color:var(--muted);margin-top:2px}
+.wz-card:hover{border-color:var(--accent-2)}
+.wz-card[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:var(--shadow)}
+.wz-card svg{flex:0 0 auto;width:52px;height:52px;color:var(--accent)}
+.wz-card .th{flex:0 0 auto;width:44px;height:44px;border-radius:10px;object-fit:cover;display:block;border:1px solid var(--line)}
+.wz-small .wz-card{min-height:48px;font-size:.9rem;padding:8px 10px}
+.wz .libitem[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.wz-body .seg{max-width:100%}
+.wz-nav{position:sticky;bottom:0;z-index:6;display:flex;gap:10px;padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,rgba(0,0,0,0),var(--bg) 35%)}
+.wz-nav .btn{flex:1;min-height:50px;font-size:1rem}
+.wz-nav .btn:disabled{opacity:.45;cursor:default;transform:none;box-shadow:none}
+.linkbtn{background:none;border:0;color:var(--accent);text-decoration:underline;font:600 .9rem var(--f-body);cursor:pointer;padding:10px 6px;min-height:44px}
+table.wz-sum td:first-child{color:var(--muted);width:34%}
+table.wz-sum td.sp{white-space:normal}
+.projbar .pb-name{min-width:0;overflow-wrap:anywhere}
+.projbar .pb-sel{min-width:0;max-width:260px;flex:0 1 220px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:600 .82rem var(--f-body);padding:6px 10px;min-height:34px}
+.projbar .pb-btn{padding:5px 12px;font-size:.82rem;min-height:34px}
+@media (max-width:640px){
+  .wz-prog span{display:none}
+  .wz-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .wz-card{flex-direction:column;align-items:flex-start;gap:6px}
+  .wz-small .wz-card{flex-direction:row;align-items:center}
+  .projbar{gap:6px}
+  .projbar .pb-name{flex:1 1 100%}
+  .projbar .pb-sel{flex:1 1 0;max-width:none;min-height:40px;font-size:16px}
+  .projbar .pb-btn{flex:0 0 auto;min-height:40px;padding:6px 12px}
+  table.wz-sum tr{grid-template-columns:6.8em minmax(0,1fr)}
+  table.wz-sum td:first-child{width:auto}
+  table.wz-sum td:last-child{overflow-wrap:anywhere}
+}
 </style>
 
 <div class="wrap" id="app"></div>
@@ -2218,7 +2264,24 @@ const I18N_EN = {
  "Šilkas sušlapęs silpnesnis – skalbti rankomis arba valyti cheminiu būdu, formuoti garais atsargiai. (Vogue Knitting)": "Silk is weaker when wet – hand wash or dry clean, and block with steam carefully. (Vogue Knitting)",
  "Šukuotiniai (worsted-spun)": "Worsted-spun",
  "Šukuotiniai siūlai lygūs, tankūs, tvirtesni, gerai krenta, akys ryškios; po skalbimo pasikeičia mažiau. (The Woolly Thistle; Brooklyn Tweed)": "Worsted-spun yarns are smooth, dense and stronger, drape well, and the stitches are crisp; they change less after washing. (The Woolly Thistle; Brooklyn Tweed)",
- "– # eil. (# eil./# cm)": "– # rows (# rows/# cm)"
+ "– # eil. (# eil./# cm)": "– # rows (# rows/# cm)",
+  "# adatų · stambus # mm · be antros lovos": "# needles · bulky # mm · no ribber",
+  "# adatų · standartinis # mm · galima antra lova": "# needles · standard # mm · ribber possible",
+  "Kam ir ką": "Who and what",
+  "Kuo megzite?": "What will you knit with?",
+  "Mezgu rankomis": "I knit by hand",
+  "Naujas projektas": "New project",
+  "Pradėti iš naujo": "Start over",
+  "Praleisti – noriu viską nustatyti pats": "Skip – I want to set everything up myself",
+  "Santrauka": "Summary",
+  "Siūlai ir mėginys": "Yarn and swatch",
+  "Toliau ▶": "Next ▶",
+  "empty – split equally": "empty – split equally",
+  "virbalai, be mašinos": "needles, no machine",
+  "Žingsniai": "Steps",
+  "Žingsnis # iš # ·": "Step # of # ·",
+  "＋ Naujas": "＋ New",
+  "＋ Naujas projektas": "＋ New project"
 };
 
 const I18N_NB = {
@@ -4201,7 +4264,24 @@ const I18N_NB = {
   "Šilkas sušlapęs silpnesnis – skalbti rankomis arba valyti cheminiu būdu, formuoti garais atsargiai. (Vogue Knitting)": "Silke er svakere når den er våt – vask for hånd eller rens kjemisk, og form med damp forsiktig. (Vogue Knitting)",
   "Šukuotiniai (worsted-spun)": "Kamgarn",
   "Šukuotiniai siūlai lygūs, tankūs, tvirtesni, gerai krenta, akys ryškios; po skalbimo pasikeičia mažiau. (The Woolly Thistle; Brooklyn Tweed)": "Kamgarn er glatt, tett og sterkere, faller fint, og maskene blir tydelige; det endrer seg mindre etter vask. (The Woolly Thistle; Brooklyn Tweed)",
-  "– # eil. (# eil./# cm)": "– # rader (# rader/# cm)"
+  "– # eil. (# eil./# cm)": "– # rader (# rader/# cm)",
+  "# adatų · stambus # mm · be antros lovos": "# nåler · grov # mm · uten vrangbordseng",
+  "# adatų · standartinis # mm · galima antra lova": "# nåler · standard # mm · vrangbordseng mulig",
+  "Kam ir ką": "Til hvem og hva",
+  "Kuo megzite?": "Hva strikker du med?",
+  "Mezgu rankomis": "Jeg strikker for hånd",
+  "Naujas projektas": "Nytt prosjekt",
+  "Pradėti iš naujo": "Start på nytt",
+  "Praleisti – noriu viską nustatyti pats": "Hopp over – jeg vil stille inn alt selv",
+  "Santrauka": "Oppsummering",
+  "Siūlai ir mėginys": "Garn og strikkeprøve",
+  "Toliau ▶": "Neste ▶",
+  "empty – split equally": "tom – fordeles likt",
+  "virbalai, be mašinos": "pinner, uten maskin",
+  "Žingsniai": "Trinn",
+  "Žingsnis # iš # ·": "Trinn # av # ·",
+  "＋ Naujas": "＋ Nytt",
+  "＋ Naujas projektas": "＋ Nytt prosjekt"
 };
 
 /*CORE*/
@@ -5309,7 +5389,7 @@ try{ const saved=JSON.parse(localStorage.getItem(KEY)||'{}'); S=Object.assign(fr
   Object.keys(DEF_GAUGE).forEach(m=>{ S.gauges[m]=Object.assign(clone(DEF_GAUGE[m]), S.gauges[m]||{}); const G=S.gauges[m]; if(!(G.swG>0) && G.swW===10 && G.swH===10){ G.swW=0; G.swH=0; } });
   if(!MACHINES[S.machine]) S.machine='SK280';
   if(!GARMENTS[S.garment]) { S.garment='megztinis'; S.piece='nugara'; }
-  if(!['meginys','konfig','iskarpos','masina','rastai','rankinis','stash','projektai','skaiciuokles','pagalba'].includes(S.tab)) S.tab='meginys';
+  if(!['pradzia','meginys','konfig','iskarpos','masina','rastai','rankinis','stash','projektai','skaiciuokles','pagalba'].includes(S.tab)) S.tab='meginys';
   if(!S.open || typeof S.open!=='object') S.open={};
   if(!Array.isArray(S.projects)) S.projects=[];
   if(!S.calc) S.calc=freshState().calc;
@@ -5492,7 +5572,8 @@ function fitCap(gk){
 /* ---------- PIEŠIMAS ---------- */
 function projLabel(){ const G=GARMENTS[S.garment]; const c=S.cur&&S.cur.gk===S.garment?S.cur:null;
   const anyEdited=Object.keys(S.edited||{}).some(k=>k.startsWith(S.garment+'/'));
-  return `Projektas: <b>${esc(G?G.name:'')}</b>${c?` · ${esc(c.who)} ${esc(c.size)}${c.fit?' · '+esc(c.fit):''}`:(anyEdited?' · jūsų matmenys':' · <span style="color:var(--accent)">pavyzdiniai matmenys</span>')}`; }
+  const base=`Projektas: <b>${esc(G?G.name:'')}</b>${c?` · ${esc(c.who)} ${esc(c.size)}${c.fit?' · '+esc(c.fit):''}`:(anyEdited?' · jūsų matmenys':' · <span style="color:var(--accent)">pavyzdiniai matmenys</span>')}`;
+  return typeof wzProjBar==='function' ? wzProjBar(base) : base; }
 function render(){
   try{
   const m=MACHINES[S.machine], g=S.gauges[S.machine];
@@ -5507,12 +5588,14 @@ function render(){
   </header>
   <div class="projbar">${projLabel()}</div>
   <nav class="tabs" role="tablist">
-    ${[['meginys','1. Mėginys'],['konfig','2. Modelis'],['iskarpos','3. Detalės'],['masina','4. Mezgimas'],['rastai','Raštai'],...(typeof viewRankinis==='function'?[['rankinis','Rankinis mezgimas']]:[]),...(typeof viewStash==='function'?[['stash','Mano siūlai']]:[]),['projektai','Išsaugoti'],['skaiciuokles','Įrankiai'],['pagalba','Pagalba']].map(([id,l])=>`<button role="tab" data-tab="${id}" aria-selected="${S.tab===id}">${l}</button>`).join('')}
+    ${[...(typeof viewWizard==='function'?[['pradzia','＋ Naujas projektas']]:[]),['meginys','1. Mėginys'],['konfig','2. Modelis'],['iskarpos','3. Detalės'],['masina','4. Mezgimas'],['rastai','Raštai'],...(typeof viewRankinis==='function'?[['rankinis','Rankinis mezgimas']]:[]),...(typeof viewStash==='function'?[['stash','Mano siūlai']]:[]),['projektai','Išsaugoti'],['skaiciuokles','Įrankiai'],['pagalba','Pagalba']].map(([id,l])=>`<button role="tab" data-tab="${id}" aria-selected="${S.tab===id}">${l}</button>`).join('')}
   </nav>
   <main id="view"></main>`;
   document.querySelectorAll('[data-mach]').forEach(b=>b.onclick=()=>{S.machine=b.dataset.mach; save(); render();});
   document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab; save(); render();});
-  ({pagalba:viewPagalba, konfig:viewKonfig, iskarpos:viewIskarpos, meginys:viewMeginys, skaiciuokles:viewCalc, projektai:viewProjects, masina:viewMasina, rastai:viewRastai, rankinis:(typeof viewRankinis==='function'?viewRankinis:viewMeginys), stash:(typeof viewStash==='function'?viewStash:viewMeginys)})[S.tab]();
+  if(typeof wzBindBar==='function') wzBindBar();
+  if(S.tab==='pradzia' && typeof viewWizard!=='function') S.tab='meginys';
+  ({pradzia:(typeof viewWizard==='function'?viewWizard:viewMeginys), pagalba:viewPagalba, konfig:viewKonfig, iskarpos:viewIskarpos, meginys:viewMeginys, skaiciuokles:viewCalc, projektai:viewProjects, masina:viewMasina, rastai:viewRastai, rankinis:(typeof viewRankinis==='function'?viewRankinis:viewMeginys), stash:(typeof viewStash==='function'?viewStash:viewMeginys)})[S.tab]();
   if(typeof bindLang==='function') bindLang();
   try{ const nv=document.querySelector('nav.tabs'), sel=nv&&nv.querySelector('[aria-selected="true"]'); if(nv&&sel&&nv.scrollWidth>nv.clientWidth) nv.scrollLeft=Math.max(0, sel.offsetLeft-nv.clientWidth/2+sel.offsetWidth/2); }catch(e){}
   }catch(err){
@@ -5868,6 +5951,7 @@ function viewProjects(){
   $('#prSave').onclick=()=>{ const n=$('#pr-name').value.trim()||(GARMENTS[gk].name+' '+(list.length+1));
     S.projects.push({id:Date.now().toString(36), name:n, garment:gk, machine:S.machine, params:clone(S.params[gk]), gauge:clone(S.gauges[S.machine])}); save(); viewProjects(); };
   document.querySelectorAll('[data-load]').forEach(b=>b.onclick=()=>{ const pr=S.projects.find(x=>x.id===b.dataset.load); if(!pr) return;
+    if(typeof wzLoad==='function'){ S.tab='iskarpos'; wzLoad(pr); return; }
     S.params[pr.garment]=clone(pr.params); S.machine=pr.machine; S.gauges[pr.machine]=clone(pr.gauge); S.garment=pr.garment; S.piece=GARMENTS[pr.garment].pieces[0].id;
     Object.keys(DEF[pr.garment]).forEach(k=>S.edited[pr.garment+'/'+k]=true); S.tab='iskarpos'; save(); render(); });
   document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{ const id=b.dataset.del;
@@ -8427,6 +8511,426 @@ function stBind(gk,plan){
       save(); const u=stSpalvosUrl(); if(u==='spalvos/') location.href=u; else { try{ window.open(u,'_blank','noopener'); }catch(e){} stUI.msg='Paletė įrašyta. Spalvų programa atidaryta naujame lange.'; viewStash(); } return; }
   });
 }
+
+/* ================= NAUJO PROJEKTO VEDLYS =================
+   S.wiz          – vedlio būsena (išlieka perkrovus): žingsnis, mašina, siūlai, mėginys, kam/ką, modelis, raštas, pavadinimas.
+   S.wizDismissed – naudotojas pasirinko „Praleisti“ (vedlys nebeatsidaro savaime).
+   S.activeProject – aktyvaus projekto id (S.projects). Projektas = {id,name,garment,machine,mode,params,gauge,hand,cur,wiz:true}.
+   Kuriant projektą parametrai sudaromi taip pat kaip „2. Modelis“ mygtuku „Pritaikyti“ (buildFromCfg). */
+const WZ_STEPS=['Mašina','Siūlai ir mėginys','Kam ir ką','Modelis','Raštas','Santrauka'];
+// mėginio žymės pagal instrukciją (kaip „1. Mėginys“): tarp žymių akių / tarp kontrastinių eilučių eilių
+const WZ_SW={SK280:{half:35, mark:21, sts:40, rows:60, edge:20, mid:30}, SK155:{half:15, mark:11, sts:20, rows:30, edge:10, mid:15}};
+const WZ_OWN={ body:['chest','waist','hips','cross','armhole','backWaist','arm','upper','wrist'], kelnes:['waist','hips','inseam','rise'], sijonas:['waist','hips'],
+  poncas:['chest'], salikas:[], head:['head'], hand:['hand','handLen'], foot:['foot','footLen'] };
+
+function wzFresh(){ return {step:1, max:1, mode:'', ribber:true, needle:'4 mm', ysrc:'', yid:'',
+  ny:{name:'', m100:0, skeinG:0, haveG:0}, fiber:'', spin:'', cone:'ne',
+  gm:'direct', sts:0, rows:0, mkW:0, mkH:0, swG:0, swW:0, swH:0, tension:'', example:false,
+  who:'moteris', garment:'megztinis', size:'M', fit:'klasik', own:clone((S.cfg&&S.cfg.own)||{}), ownOpen:false,
+  arm:'isiuta', shoulder:'japon', neckShape:'apvali', collar:'juosta', btnN:2, overlap:3, hm:'plokscia', sock:'virsus', thumb:'pleistas',
+  pat:'plain', lib:'', libExt:false, name:'', nameAuto:true, err:''}; }
+function wzState(){
+  let w=S.wiz; if(!w||typeof w!=='object') w=S.wiz=wzFresh();
+  const f=wzFresh(); Object.keys(f).forEach(k=>{ if(w[k]==null) w[k]=f[k]; });
+  if(!w.own||typeof w.own!=='object') w.own={};
+  if(!w.ny||typeof w.ny!=='object') w.ny=f.ny;
+  w.step=Math.min(6,Math.max(1,parseInt(w.step,10)||1)); w.max=Math.max(w.step,Math.min(6,parseInt(w.max,10)||1));
+  if(!['SK280','SK155','hand',''].includes(w.mode)) w.mode='';
+  if(!w.mode){ w.step=1; w.max=1; }
+  wzFix(w); return w;
+}
+const wzNum=v=>{ const x=parseFloat(String(v==null?'':v).replace(',','.')); return isFinite(x)&&x>0?x:0; };
+const wzR1=x=>Math.round(x*10)/10;
+const wzStash=()=>Array.isArray(S.stash)?S.stash.filter(y=>y&&typeof y==='object'):[];
+function wzCfg(w){
+  const c=Object.assign(defaultCfg(), {who:w.who, garment:w.garment, fit:w.fit, ease:(FITS.find(f=>f[0]===w.fit)||FITS[2])[2],
+    arm:w.arm, shoulder:w.shoulder, neckShape:w.neckShape, collar:w.collar, btnN:wzNum(w.btnN)||0, overlap:wzNum(w.overlap)||0, own:{}});
+  Object.keys(w.own||{}).forEach(k=>{ const v=wzNum(w.own[k]); if(v) c.own[k]=v; });
+  if(S.cfg&&S.cfg.glove&&typeof S.cfg.glove==='object') c.glove=clone(S.cfg.glove);
+  const kind=ACC_KIND[w.garment]; c.asize={}; if(kind) c.asize[kind]=w.size; else c.size=w.size;
+  return c;
+}
+function wzFix(w){
+  if(!WHO.some(x=>x[0]===w.who)) w.who='moteris';
+  if(!CFG_GARMENTS[w.who].includes(w.garment)) w.garment='megztinis';
+  const kind=ACC_KIND[w.garment];
+  const sizes=cfgSizes(Object.assign(defaultCfg(),{who:w.who, garment:w.garment}), w.garment);
+  if(!sizes.some(s=>s[0]===w.size)) w.size = kind ? sizes[Math.min(1,sizes.length-1)][0] : sizes[Math.min(2,sizes.length-1)][0];
+  if(!FITS.some(f=>f[0]===w.fit)) w.fit='klasik';
+  if(!ARMTYPES.some(a=>a[0]===w.arm) || (CFG_NOSLEEVE.includes(w.garment)&&isRaglan(w.arm))) w.arm='isiuta';
+  if(!SHOULDERS.some(a=>a[0]===w.shoulder)) w.shoulder='japon';
+  if(!NECKS.some(a=>a[0]===w.neckShape)) w.neckShape='apvali';
+  if(!COLLARS.some(a=>a[0]===w.collar)) w.collar='juosta';
+  if(w.mode==='SK155') w.ribber=false;
+  if(w.ysrc==='stash' && !wzStash().some(y=>y.id===w.yid)){ w.ysrc=''; w.yid=''; }
+  if(w.mode==='hand' && w.gm==='measure') w.gm='direct';
+  return w;
+}
+const wzMach=w=> w.mode==='hand' ? HK_M : w.mode;
+function wzYarn(w){
+  if(w.ysrc==='stash'){ const Y=wzStash().find(y=>y.id===w.yid); if(Y){ const h=(typeof stHave==='function')?stHave(Y):{g:Y.haveG||null,m:Y.haveM||null};
+    return {Y, name:Y.name, m100:wzNum(Y.m100), skeinG:wzNum(Y.skeinG), haveG:h.g, haveM:h.m}; } }
+  const n=w.ny; return {Y:null, name:String(n.name||'').trim(), m100:wzNum(n.m100), skeinG:wzNum(n.skeinG), haveG:wzNum(n.haveG)||null, haveM:(wzNum(n.haveG)&&wzNum(n.m100))?wzNum(n.haveG)*wzNum(n.m100)/100:null};
+}
+// akys ir eilės per 10 cm iš vedlio laukų
+function wzGv(w){
+  if(w.example){ const d=w.mode==='hand'?HK_DEF:DEF_GAUGE[w.mode]||DEF_GAUGE.SK280; return {sts:d.sts, rows:d.rows, ribRows:d.ribRows||d.rows}; }
+  if(w.gm==='measure' && WZ_SW[w.mode]){ const sw=WZ_SW[w.mode], a=wzNum(w.mkW), b=wzNum(w.mkH);
+    const sts=a?wzR1(sw.sts/a*10):0, rows=b?wzR1(sw.rows/b*10):0; return {sts, rows, ribRows:rows}; }
+  const sts=wzNum(w.sts), rows=wzNum(w.rows); return {sts, rows, ribRows:rows};
+}
+function wzGaugeObj(w){
+  const y=wzYarn(w), v=wzGv(w), swG=w.example?0:wzNum(w.swG);
+  if(w.mode==='hand') return {name:y.name, ribType:'ne', sts:v.sts||HK_DEF.sts, rows:v.rows||HK_DEF.rows, ribRows:v.ribRows||v.rows||HK_DEF.ribRows,
+    swG, swW:wzNum(w.swW)||10, swH:wzNum(w.swH)||10, yarnM100:y.m100, skeinG:y.skeinG, cmSt:0, reserve:10, fiber:w.fiber, spin:w.spin, cone:w.cone};
+  const m=MACHINES[w.mode]?w.mode:'SK280', base=clone(DEF_GAUGE[m]), old=(S.gauges&&S.gauges[m])||{};
+  return Object.assign(base, {name:y.name||base.name, tension:String(w.tension||'').trim()||base.tension, sts:v.sts||base.sts, rows:v.rows||base.rows, ribRows:v.ribRows||v.rows||base.ribRows,
+    ribType:(MACHINES[m].ribber&&w.ribber)?((old.ribType&&old.ribType!=='ne')?old.ribType:'1x1'):'ne',
+    swG, swW:0, swH:0, yarnM100:y.m100, skeinG:y.skeinG, reserve:old.reserve!=null?old.reserve:10, fiber:w.fiber, spin:w.spin, cone:w.cone,
+    mkW:(!w.example&&w.gm==='measure')?wzNum(w.mkW):0, mkH:(!w.example&&w.gm==='measure')?wzNum(w.mkH):0});
+}
+function wzSizeLabel(w){ const s=cfgSizes(Object.assign(defaultCfg(),{who:w.who, garment:w.garment}), w.garment).find(x=>x[0]===w.size); return s?s[1]:String(w.size); }
+const wzWho=w=>(WHO.find(x=>x[0]===w.who)||WHO[0])[1];
+const wzFitLabel=w=> (ACC_KIND[w.garment]||w.garment==='salikas') ? '' : ((FITS.find(f=>f[0]===w.fit)||[])[1]||'').replace(/ \(.*\)/,'');
+function wzAutoName(w){ const y=wzYarn(w), fb=(FIBERS.find(f=>f[0]===w.fiber)||[])[1];
+  const yn = w.fiber&&fb ? fb.split(' /')[0].toLowerCase() : y.name;
+  const sl=wzSizeLabel(w), who=/^(Moterų|Vyrų)/.test(sl)?'':wzWho(w)+' ';
+  return [GARMENTS[w.garment].name, who+sl, yn].filter(Boolean).join(' · '); }
+function wzBuild(w){ return buildFromCfg(wzCfg(w), w.size); }
+function wzCompute(w){
+  const B=wzBuild(w), g=wzGaugeObj(w), mach=wzMach(w), params=Object.assign({}, S.params, {[B.gk]:B.params}), opts={params, gauge:g, machine:mach};
+  const car=S.carriage; if(w.mode==='hand') S.carriage='D';
+  let pieces=[], yarn=null;
+  try{ pieces=GARMENTS[B.gk].pieces.map(pc=>{ try{ return {pc, R:computePiece(B.gk,pc.id,opts)}; }catch(e){ return {pc, err:String(e&&e.message||e)}; } });
+    try{ yarn=garmentYarn(B.gk, opts); }catch(e){ yarn=null; } }
+  finally{ S.carriage=car; }
+  return {B, g, mach, opts, pieces, yarn};
+}
+// kas dar pavyzdiniai / nežinomi duomenys
+function wzExamples(w){ const L=[], y=wzYarn(w);
+  if(w.step>=2){ const v=wzGv(w);
+    if(w.example) L.push('mėginys – pavyzdinis');
+    else if(!(v.sts>0&&v.rows>0)) L.push('mėginys dar neįvestas');
+    else if(!wzNum(w.swG)) L.push('mėginio svoris nežinomas – siūlų kiekio neapskaičiuosime');
+    if((w.ysrc==='stash'||w.ysrc==='new') && !y.m100) L.push('siūlų metražas nežinomas'); }
+  if(w.step>=3 && !Object.keys(w.own||{}).some(k=>wzNum(w.own[k]))) L.push('kūno matmenys – iš standartinės lentelės (CYC)');
+  return L; }
+
+/* ---------- piktogramos (paprastos linijos) ---------- */
+const WZ_SVG=(()=>{ const s=(b)=>`<svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${b}</svg>`;
+  const torso='M22 12 L28 9 Q32 14 36 9 L42 12';
+  return {
+    isiuta:s(`<path d="${torso} Q45 20 42 27 L42 56 L22 56 L22 27 Q19 20 22 12 Z"/><path d="M22 12 L11 45 L17 47 L22 27"/><path d="M42 12 L53 45 L47 47 L42 27"/>`),
+    reglanasA:s(`<path d="M28 9 Q32 14 36 9 Q41 18 44 27 L44 56 L20 56 L20 27 Q23 18 28 9 Z"/><path d="M28 9 Q22 13 10 40 L15 44 L20 27"/><path d="M36 9 Q42 13 54 40 L49 44 L44 27"/>`),
+    reglanas:s(`<path d="M28 9 Q32 14 36 9 L44 27 L44 56 L20 56 L20 27 Z"/><path d="M28 9 L10 40 L15 44 L20 27"/><path d="M36 9 L54 40 L49 44 L44 27"/>`),
+    nuleista:s(`<path d="M17 13 L28 10 Q32 14 36 10 L47 13 L47 56 L17 56 Z"/><path d="M17 13 L8 46 L14 48 L17 32"/><path d="M47 13 L56 46 L50 48 L47 32"/>`),
+    japon:s(`<path d="M10 52 L10 18 Q30 22 54 32 L54 52"/><path d="M10 18 L54 32" stroke-dasharray="2 4" opacity=".55"/>`),
+    paprastas:s(`<path d="M10 52 L10 18 L21 18 L21 23 L32 23 L32 28 L43 28 L43 33 L54 33 L54 52"/>`),
+    tiesus:s(`<path d="M10 52 L10 20 L54 20 L54 52"/>`),
+    apvali:s(`<path d="M6 54 L6 18 L22 14 Q32 34 42 14 L58 18 L58 54"/>`),
+    V:s(`<path d="M6 54 L6 18 L22 14 L32 40 L42 14 L58 18 L58 54"/>`),
+    juosta:s(`<path d="M6 56 L6 34 L22 28 Q32 40 42 28 L58 34 L58 56"/><path d="M22 28 Q32 36 42 28 L42 24 Q32 31 22 24 Z"/>`),
+    pusgolfis:s(`<path d="M6 56 L6 34 L22 28 Q32 36 42 28 L58 34 L58 56"/><path d="M22 28 L22 16 Q32 20 42 16 L42 28"/><path d="M22 16 Q32 12 42 16"/>`),
+    golfas:s(`<path d="M6 56 L6 36 L22 30 Q32 38 42 30 L58 36 L58 56"/><path d="M22 30 L21 6 Q32 10 43 6 L42 30"/><path d="M21 6 Q32 2 43 6"/><path d="M21.5 18 Q32 22 42.5 18" opacity=".55"/>`)
+  }; })();
+
+/* ---------- piešimas ---------- */
+const wzCard=(attr,val,cur,title,sub,icon)=>`<button type="button" class="wz-card" ${attr}="${esc(val)}" aria-pressed="${String(cur)===String(val)}">${icon||''}<span>${title}${sub?`<small>${sub}</small>`:''}</span></button>`;
+const wzIn=(k,l,u,v,hint,type,attr)=>`<label class="f" for="wz-${k}">${l}<span class="in"><input id="wz-${k}" ${attr||'data-w'}="${k}" type="${type||'number'}" ${type?'':'inputmode="decimal" step="any" min="0"'} value="${type?esc(v||''):(wzNum(v)?v:'')}">${u?`<span class="u">${u}</span>`:''}</span>${hint?`<span class="hint">${hint}</span>`:''}</label>`;
+const wzSel=(k,l,opts,v,full)=>`<label class="f ${full?'full':''}" for="wz-${k}">${l}<span class="in"><select id="wz-${k}" data-w="${k}">${opts.map(([a,t])=>`<option value="${esc(a)}" ${String(v)===String(a)?'selected':''}>${esc(t)}</option>`).join('')}</select></span></label>`;
+const wzSeg=(k,opts,v)=>`<div class="seg" role="group" data-wseg="${k}">${opts.map(([a,t])=>`<button type="button" data-v="${esc(a)}" aria-pressed="${String(v)===String(a)}">${t}</button>`).join('')}</div>`;
+
+function wzStep1(w){
+  const M=Object.values(MACHINES);
+  return `<h3>Kuo megzite?</h3><div class="wz-cards">
+    ${M.map(m=>wzCard('data-wmode',m.id,w.mode,`${m.name}`,`${m.needles} adatų · ${m.kind} · ${m.ribber?'galima antra lova':'be antros lovos'}`)).join('')}
+    ${wzCard('data-wmode','hand',w.mode,'Mezgu rankomis','virbalai, be mašinos')}
+  </div>
+  ${w.mode==='SK280'?`<h3>Antra adatų lova (ribber)</h3>${wzSeg('ribber',[['1','Taip, turiu'],['0','Ne']],w.ribber?'1':'0')}<p class="note">Su antra lova juostos (1×1, 2×2) megzamos ant mašinos; be jos – dvigubu (sulenktu) kraštu.</p>`:''}
+  ${w.mode==='SK155'?`<p class="note">${MACHINES.SK155.full} programoje naudojama be antros adatų lovos – juostas formuosime dvigubu (sulenktu) kraštu.</p>`:''}
+  ${w.mode==='hand'?`<div class="fields" style="margin-top:12px">${wzIn('needle','Virbalai','',w.needle,'Pvz. 4 mm','text')}</div>`:''}`;
+}
+function wzStep2(w){
+  const st=wzStash(), y=wzYarn(w), v=wzGv(w), hand=w.mode==='hand', sw=WZ_SW[w.mode], rec=hand?null:swatchRecipe(w.mode);
+  const thumb=Y=>Y.photo?`<img class="th" src="${Y.photo}" alt="">`:`<span class="th" style="background:${esc(Y.color||'#b8a07a')}"></span>`;
+  const yarnCards = `<div class="wz-cards">${st.map(Y=>`<button type="button" class="wz-card wz-yarn" data-wyid="${esc(Y.id)}" aria-pressed="${w.ysrc==='stash'&&w.yid===Y.id}">${thumb(Y)}<span>${esc(Y.name)}<small>${Y.m100>0?`${fmt(Y.m100,0)} m/100 g`:'metražas nežinomas'}${Y.gauge?` · ${fmt(Y.gauge.sts)}×${fmt(Y.gauge.rows)}`:''}</small></span></button>`).join('')}
+    ${wzCard('data-wysrc','new',w.ysrc,'＋ Nauji siūlai','įvesiu duomenis')}</div>`;
+  const ny=w.ny;
+  const newForm = w.ysrc==='new' ? `<div class="fields" style="margin-top:12px">
+      <label class="f full" for="wz-ny-name">Pavadinimas<span class="in"><input id="wz-ny-name" data-wy="name" type="text" value="${esc(ny.name||'')}" placeholder="pvz. Alpaka, pilka"></span></label>
+      ${wzIn('ny-m100','Metražas','m/100 g',ny.m100,'Iš etiketės','', 'data-wy')}${wzIn('ny-skeinG','Kamuolio svoris','g',ny.skeinG,'Iš etiketės','', 'data-wy')}
+      ${wzIn('ny-haveG','Turiu','g',ny.haveG,'Nebūtina – palyginsime su poreikiu','', 'data-wy')}
+    </div>` : '';
+  const fiberForm = (w.ysrc==='new'||w.ysrc==='stash') ? `<div class="fields" style="margin-top:12px">
+      ${wzSel('fiber','Pluoštas',FIBERS,w.fiber)}${wzSel('spin','Verpimas',SPINS,w.spin)}
+      ${wzSel('cone','Siūlai ant kūgio (su alyva / vašku)',[['ne','Ne / nežinau'],['taip','Taip']],w.cone,true)}
+    </div>
+    <details class="grp" data-wopen="tips" ${w.tipsOpen!==false?'open':''}><summary>Patarimai šiems siūlams</summary><ul class="note" style="margin:0;padding-left:18px">${fiberAdvice({fiber:w.fiber, spin:w.spin, cone:w.cone}).map(t=>`<li>${esc(t)}</li>`).join('')}</ul></details>` : '';
+  let gauge;
+  if(w.example){ gauge=`<div class="warn" style="margin-top:10px">Naudojamas <b>pavyzdinis</b> mėginys: ${fmt(v.sts)} ak. × ${fmt(v.rows)} eil. / 10 cm. Akių skaičiai bus apytiksliai – numegzkite mėginį ir įrašykite jį vėliau („1. Mėginys“).</div>
+      <div class="row" style="margin-top:8px"><button type="button" class="btn" data-wact="noexample">Įvesti savo mėginį</button></div>`; }
+  else {
+    const direct=`<div class="fields">${wzIn('sts','Akių 10 cm','ak.',w.sts,'Kiek akių telpa 10 cm pločio')}${wzIn('rows','Eilių 10 cm','eil.',w.rows,'Kiek eilių telpa 10 cm aukščio')}</div>`;
+    const measure=sw?`<ol class="steps" style="margin:4px 0 10px">
+        <li>Į darbą – po ${sw.half} adatų abipus vidurio; ${sw.edge} eil., 2 eil. kontrastiniu, ${sw.mid} eil.</li>
+        <li>Abipus vidurio ${sw.mark}-ąsias adatas pažymėkite siūlu (tarp žymių – ${sw.sts} ak.); dar ${sw.mid} eil., 2 eil. kontrastiniu, ${sw.edge} eil.</li>
+        <li>Išskalbkite, išdžiovinkite ir išmatuokite atstumus.</li></ol>
+      <div class="fields">${wzIn('mkW',`${sw.sts} akių plotis`,'cm',w.mkW,'Tarp siūlų žymių')}${wzIn('mkH',`${sw.rows} eilių aukštis`,'cm',w.mkH,'Tarp kontrastinių eilių')}</div>
+      <div class="out" id="wzMeasOut">${v.sts&&v.rows?`Jūsų mėginys: <b>${fmt(v.sts)} ak.</b> ir <b>${fmt(v.rows)} eil.</b> per 10 cm.`:'Įveskite abu atstumus – apskaičiuosime akis ir eiles per 10 cm.'}</div>`:'';
+    gauge=`${hand?'':`<div style="margin:4px 0 10px">${wzSeg('gm',[['direct','Žinau akis ir eiles'],['measure','Išmatavau atstumus']],w.gm)}</div>`}
+      ${w.gm==='measure'&&!hand?measure:direct}
+      <div class="fields" style="margin-top:10px">
+        ${hand?'':wzIn('tension','Tempimo rankenėlė','',w.tension,'Stitch Dial numeris','text')}
+        ${wzIn('swG','Mėginio svoris','g',w.swG,hand?'Nebūtina – siūlų kiekiui':`Nebūtina – siūlų kiekiui. Pasverkite visą mėginį (${rec.sts} ak. × ${rec.rows} eil.)`)}
+        ${hand?wzIn('swW','Mėginio plotis','cm',w.swW,'Pasverto mėginio')+wzIn('swH','Mėginio aukštis','cm',w.swH):''}
+      </div>
+      <div class="row" style="margin-top:10px"><button type="button" class="btn" data-wact="example">Dar neturiu mėginio – naudoti pavyzdinį</button></div>`;
+  }
+  return `<h3>Siūlai</h3>${st.length?yarnCards:`${wzCard('data-wysrc','new',w.ysrc,'＋ Nauji siūlai','įvesiu duomenis')}<p class="note">„Mano siūluose“ dar nieko nėra – naujus siūlus ten ir išsaugosime.</p>`}
+    ${newForm}${fiberForm}
+    <h3>Mėginys${hand?' (rankinis mezgimas)':' · '+esc(MACHINES[w.mode].name)}</h3>${gauge}`;
+}
+function wzOwnFields(gk){ const k=ACC_KIND[gk]; if(k) return WZ_OWN[k]; if(WZ_OWN[gk]) return WZ_OWN[gk]; return WZ_OWN.body; }
+function wzStep3(w){
+  const kind=ACC_KIND[w.garment], c=wzCfg(w), sizes=cfgSizes(c, w.garment), kid=(WHO.find(x=>x[0]===w.who)||WHO[0])[2]==='vaikas';
+  const tv=cfgTableVals(Object.assign({},c,{size:kind?(CYC[(WHO.find(x=>x[0]===w.who)||WHO[0])[2]].sizes[2]||'M'):w.size}));
+  const keys=wzOwnFields(w.garment), ownN=keys.filter(k=>wzNum(w.own[k])).length;
+  const fitOk=!(kind||w.garment==='salikas');
+  return `<h3>Kam</h3>${wzSeg('who',WHO.map(x=>[x[0],x[1]]),w.who)}
+    <h3>Ką megzite</h3><div class="wz-cards wz-small">${CFG_GARMENTS[w.who].map(g=>wzCard('data-wgk',g,w.garment,esc(GARMENTS[g].name))).join('')}</div>
+    <h3>Dydis${kind?` (CYC ${ACC_NAME[kind]} lentelė)`:kid?' (amžius, metai)':''}</h3>${wzSeg('size',sizes,w.size)}
+    ${fitOk?`<div class="fields" style="margin-top:12px">${wzSel('fit','Prigludimas',FITS.map(f=>[f[0],f[1]]),w.fit,true)}</div>`:''}
+    ${keys.length?`<details class="grp" data-wopen="own" ${w.ownOpen?'open':''} style="margin-top:12px"><summary>Savo matmenys${ownN?` (įvesta: ${ownN})`:' (nebūtina)'}</summary>
+      <p class="note" style="margin-top:4px">Įrašykite tik tai, ką išmatavote. Tuščia – imama lentelės reikšmė (rodoma pilkai).</p>
+      <div class="fields">${OWN_FIELDS.filter(f=>keys.includes(f[0])).map(([k,l,h])=>`<label class="f" for="wz-own-${k}">${l}<span class="in"><input id="wz-own-${k}" data-wo="${k}" type="number" inputmode="decimal" step="0.5" min="0" value="${wzNum(w.own[k])?w.own[k]:''}" placeholder="${tv[k]!=null?'CYC '+fmt(tv[k]):'—'}"><span class="u">cm</span></span>${h?`<span class="hint">${h}</span>`:''}</label>`).join('')}</div></details>`:''}`;
+}
+function wzStep4(w){
+  const gk=w.garment, body=CFG_BODY.includes(gk), noSl=CFG_NOSLEEVE.includes(gk), parts=[];
+  if(body){
+    const arms=noSl?ARMTYPES.filter(a=>!isRaglan(a[0])):ARMTYPES;
+    parts.push(`<h3>${noSl?'Rankos anga':'Rankovė'}</h3><div class="wz-cards">${arms.map(a=>wzCard('data-wset-arm',a[0],w.arm,esc(a[1]),'',WZ_SVG[a[0]])).join('')}</div>`);
+    if(!isRaglan(w.arm)) parts.push(`<h3>Petys</h3><div class="wz-cards">${SHOULDERS.map(s=>{ const m=s[1].match(/^(.*?) \((.*)\)$/); return wzCard('data-wset-shoulder',s[0],w.shoulder,esc(m?m[1]:s[1]),m?esc(m[2]):'',WZ_SVG[s[0]]); }).join('')}</div>`);
+    if(!['svarkas','halatas','boleras'].includes(gk)) parts.push(`<h3>Iškirptė</h3><div class="wz-cards">${NECKS.map(n=>wzCard('data-wset-neckShape',n[0],w.neckShape,esc(n[1]),'',WZ_SVG[n[0]])).join('')}</div>`);
+    if(DEF[gk]&&DEF[gk].apykakle) parts.push(`<h3>Kaklas</h3><div class="wz-cards">${[['juosta','Mažas (juosta)'],['pusgolfis','Pusiau aukštas'],['golfas','Aukštas (golfas)']].map(c=>wzCard('data-wset-collar',c[0],w.collar,c[1],'',WZ_SVG[c[0]])).join('')}</div>`);
+    if(gk==='svarkas') parts.push(`<h3>Sagos</h3><div class="fields">${wzIn('btnN','Sagų skaičius','vnt.',w.btnN)}${wzIn('overlap','Užlaida sagoms','cm',w.overlap,'≈3 – viena sagų eilė, ≈7 – dvi')}</div>`);
+    if(gk==='kardiganas'||gk==='liemeneU') parts.push(`<p class="note">Sagų juosta ir sagų skaičius nustatomi automatiškai – pakeisite „Detalėse“.</p>`);
+  }
+  if(w.mode==='hand'){
+    parts.push(`<h3>Kaip megzite rankomis</h3><div class="wz-cards">${HK_OPT.method.map(o=>wzCard('data-wset-hm',o[0],w.hm,esc(o[1]))).join('')}</div>`);
+    if(gk==='kojines') parts.push(`<h3>Kojinių būdas</h3><div class="wz-cards">${HK_OPT.sock.map(o=>wzCard('data-wset-sock',o[0],w.sock,esc(o[1]))).join('')}</div>`);
+    if(gk==='kumstines'||gk==='pirstines') parts.push(`<h3>Nykštys</h3><div class="wz-cards">${HK_OPT.thumb.map(o=>wzCard('data-wset-thumb',o[0],w.thumb,esc(o[1]))).join('')}</div>`);
+  }
+  if(!parts.length) parts.push(`<p class="note">Gaminiui „${esc(GARMENTS[gk].name)}“ modelio pasirinkimų nėra – matmenis galėsite keisti „Detalėse“.</p>`);
+  return parts.join('');
+}
+function wzLibList(w){ if(typeof libAll!=='function'||typeof patState!=='function') return [];
+  const p=patState(), CW=w.mode==='hand'||!MACHINES[w.mode]?cardWidth():MACHINES[w.mode].card;
+  try{ return libAll(p,CW); }catch(e){ return []; } }
+function wzStep5(w){
+  const hasLib=typeof libAll==='function';
+  let lib='';
+  if(w.pat==='lib' && hasLib){ const p=patState(), L=wzLibList(w), shown=L.slice(0,12);
+    if(w.lib && !shown.some(it=>it.id===w.lib)){ const it=L.find(x=>x.id===w.lib); if(it) shown.push(it); }
+    const ext=w.libExt&&!w.lib&&p.libName;
+    lib=`<p class="note">Technika: <b>${esc((TECHS[p.tech]||TECHS.spalvos).name)}</b>. Daugiau raštų, kitos technikos ir nuotraukos – skirtuke „Raštai“.</p>
+      ${ext?`<div class="out">Pasirinktas raštas iš „Raštų“: <b>${esc(p.libName)}</b>.</div>`:''}
+      <div class="libgrid">${shown.map(it=>`<button type="button" class="libitem" data-wlib="${esc(it.id)}" aria-pressed="${w.lib===it.id}" title="${esc(it.name)}"><img alt="" src="${libThumb(it,p)}"><span>${esc(it.name)}<small>${it.W}×${it.H}</small></span></button>`).join('')}</div>
+      <div class="row" style="margin-top:10px"><button type="button" class="btn" data-wact="morelib">Daugiau → Raštai</button></div>`; }
+  return `<h3>Raštas (nebūtina)</h3><div class="wz-cards">
+     ${wzCard('data-wset-pat','plain',w.pat,'Lygus mezginys','be rašto')}
+     ${hasLib?wzCard('data-wset-pat','lib',w.pat,'Raštas iš bibliotekos','žakardas, patiesinimas ir kt.'):''}
+     ${typeof viewStash==='function'?wzCard('data-wset-pat','stripes',w.pat,'Dryžiai ar ombrė','iš mano siūlų'):''}</div>
+    ${lib}
+    ${w.pat==='stripes'?'<p class="note">Sukūrę projektą, dryžius ar ombrę suplanuosite skirtuke „Mano siūlai“ (nuoroda bus projekto juostoje).</p>':''}`;
+}
+function wzStep6(w){
+  const C=wzCompute(w), {B,g,pieces,yarn}=C, y=wzYarn(w), hand=w.mode==='hand', m=hand?null:MACHINES[w.mode];
+  if(w.nameAuto||!String(w.name||'').trim()) w.name=wzAutoName(w);
+  const warns=[];
+  if(w.example) warns.push('Mėginys pavyzdinis – akių ir eilių skaičiai apytiksliai. Prieš mezgdami numegzkite mėginį.');
+  const rows=pieces.map(({pc,R,err})=>{
+    if(err||!R) return `<tr><td>${esc(pc.name)}</td><td class="sp">—</td></tr>`;
+    let val;
+    if(R.special){ const st=(R.sim.stats||[]).slice(0,2); val=st.map(s=>`${s[0]} ${s[1]}`).join(' · ')||'—'; }
+    else { val=`${R.sim.castOn.n} ak. · ${R.sim.N} eil.`;
+      if(m&&R.sim.needed>m.needles) warns.push(`${pc.name}: reikia ${R.sim.needed} adatų, ${m.name} turi ${m.needles}.`); }
+    if(!hand) (R.sim.warnings||[]).forEach(x=>{ if(!warns.includes(x)) warns.push(x); });
+    return `<tr><td>${esc(pc.name)}${pc.count>1?' ×'+pc.count:''}</td><td class="sp">${esc(val)}</td></tr>`; }).join('');
+  let need='';
+  if(yarn&&(yarn.grams!=null||yarn.meters!=null)){
+    const left = y.haveG!=null&&yarn.grams!=null ? y.haveG-yarn.grams : (y.haveM!=null&&yarn.meters!=null ? (y.haveM-yarn.meters) : null);
+    const unit = y.haveG!=null&&yarn.grams!=null ? 'g' : 'm';
+    need=`<div class="out">🧶 Reikės ≈ <b>${yarn.grams!=null?fmt(yarn.grams,0)+' g':''}${yarn.grams!=null&&yarn.meters!=null?' · ':''}${yarn.meters!=null?fmt(yarn.meters,0)+' m':''}</b>${yarn.skeins?` · ${yarn.skeins} kamuol.`:''} (su ${fmt(yarn.reserve,0)} % atsarga).
+      ${left!=null?`<br>Turite ≈ ${fmt(unit==='g'?y.haveG:y.haveM,0)} ${unit} – ${left>=0?`<b>užteks</b> (liks ≈ ${fmt(left,0)} ${unit})`:`<b>trūksta ≈ ${fmt(-left,0)} ${unit}</b>`}.`:''}</div>`;
+    if(left!=null&&left<0) warns.push(`Siūlų trūksta ≈ ${fmt(-left,0)} ${unit}.`);
+  } else { need=`<div class="out">🧶 Siūlų kiekiui reikia mėginio svorio${y.m100?'':' ir metražo'} – įvesite vėliau („1. Mėginys“${hand?' arba „Rankinis mezgimas“':''}).</div>`;
+    if(!w.example) warns.push('Mėginio svoris neįvestas – siūlų kiekis nebus apskaičiuotas.'); }
+  const model=[]; if(CFG_BODY.includes(B.gk)){ model.push((ARMTYPES.find(a=>a[0]===B.params.nugara.armType)||[])[1]);
+    if(!isRaglan(B.params.nugara.armType)) model.push(((SHOULDERS.find(s=>s[0]===B.params.nugara.method)||[])[1]||'').replace(/ \(.*\)/,''));
+    if(B.params.priekis&&B.params.priekis.neckShape) model.push('iškirptė '+((NECKS.find(n=>n[0]===B.params.priekis.neckShape)||[])[1]||'').toLowerCase()); }
+  const patTxt = w.pat==='lib' ? `raštas „${esc(w.lib?((wzLibList(w).find(it=>it.id===w.lib)||{}).name||''):((S.pat&&S.pat.libName)||''))}“` : w.pat==='stripes' ? 'dryžiai / ombrė (Mano siūlai)' : 'lygus mezginys';
+  const fit=wzFitLabel(w);
+  return `<div class="fields"><label class="f full" for="wz-name">Projekto pavadinimas<span class="in"><input id="wz-name" data-w="name" type="text" value="${esc(w.name)}"></span></label></div>
+    <div class="tblwrap" style="margin-top:12px"><table class="ins wz-sum"><tbody>
+      <tr><td>Mezgu</td><td>${hand?`rankomis · virbalai ${esc(w.needle||'')}`:esc(m.full)+(m.ribber?(w.ribber?' · su antra lova':' · be antros lovos'):'')}</td></tr>
+      <tr><td>Siūlai</td><td>${esc(y.name||'—')}${y.m100?` · ${fmt(y.m100,0)} m/100 g`:''}${w.ysrc==='new'?' <span class="note">(bus įrašyti į „Mano siūlus“)</span>':''}</td></tr>
+      <tr><td>Mėginys</td><td>${fmt(g.sts)} ak. × ${fmt(g.rows)} eil. / 10 cm ${w.example?'<span class="ex">pavyzdys</span>':''}</td></tr>
+      <tr><td>Kam ir ką</td><td>${esc(GARMENTS[B.gk].name)} · ${esc(wzWho(w))} ${esc(wzSizeLabel(w))}${fit?' · '+esc(fit):''}</td></tr>
+      ${model.filter(Boolean).length?`<tr><td>Modelis</td><td>${esc(model.filter(Boolean).join(' · '))}</td></tr>`:''}
+      <tr><td>Raštas</td><td>${patTxt}</td></tr>
+    </tbody></table></div>
+    <h3>Detalės</h3>
+    <div class="tblwrap"><table class="ins wz-sum"><tbody>${rows}</tbody></table></div>
+    ${need}
+    ${warns.map(x=>`<div class="warn" style="margin-top:8px">${esc(x)}</div>`).join('')}
+    ${(B.assume||[]).length||(B.notes||[]).length?`<details class="grp" style="margin-top:10px"><summary>Prielaidos</summary><ul class="note" style="margin:0;padding-left:18px">${(B.assume||[]).concat(B.notes||[]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></details>`:''}`;
+}
+function wzValidate(w){
+  if(w.step===1 && !w.mode) return 'Pasirinkite mašiną arba „Mezgu rankomis“.';
+  if(w.step===2){ if(!w.ysrc) return 'Pasirinkite siūlus arba įveskite naujus.';
+    if(w.ysrc==='new' && !String(w.ny.name||'').trim()) return 'Įrašykite siūlų pavadinimą.';
+    if(!w.example){ const v=wzGv(w); if(!(v.sts>0&&v.rows>0)) return w.gm==='measure'?'Įveskite abu išmatuotus atstumus arba naudokite pavyzdinį mėginį.':'Įveskite akis ir eiles per 10 cm arba naudokite pavyzdinį mėginį.';
+      if(v.sts>80||v.rows>120) return 'Mėginio skaičiai per dideli – patikrinkite (akys ir eilės per 10 cm).'; } }
+  if(w.step===5 && w.pat==='lib' && !w.lib && !(w.libExt&&S.pat&&S.pat.libName)) return 'Pasirinkite raštą arba „Lygus mezginys“.';
+  if(w.step===6 && !String(w.name||'').trim()) return 'Įrašykite projekto pavadinimą.';
+  return '';
+}
+function viewWizard(){
+  const w=wzState(), ex=wzExamples(w);
+  const body=[wzStep1,wzStep2,wzStep3,wzStep4,wzStep5,wzStep6][w.step-1](w);
+  $('#view').innerHTML=`<section class="panel wz" id="wzTop">
+    <div class="row" style="justify-content:space-between"><h2 style="margin:0">Naujas projektas</h2><button type="button" class="btn" data-wact="restart">Pradėti iš naujo</button></div>
+    <ol class="wz-prog" aria-label="Žingsniai">${WZ_STEPS.map((t,i)=>{ const n=i+1, cls=n===w.step?'cur':(n<=w.max?'done':'');
+      return `<li class="${cls}"><button type="button" data-wstep="${n}" ${n<=w.max&&n!==w.step?'':'disabled'} ${n===w.step?'aria-current="step"':''}><i></i><span>${esc(t)}</span></button></li>`; }).join('')}</ol>
+    <p class="wz-cur">Žingsnis ${w.step} iš ${WZ_STEPS.length} · <b>${esc(WZ_STEPS[w.step-1])}</b></p>
+    ${ex.length?`<p class="wz-ex">Dar pavyzdiniai ar nežinomi duomenys: ${ex.map(esc).join('; ')}.</p>`:''}
+    <div class="wz-body">${body}</div>
+    ${w.err?`<div class="warn" style="margin-top:12px" role="alert">${esc(w.err)}</div>`:''}
+  </section>
+  <div class="wz-nav noprint">
+    <button type="button" class="btn" data-wact="back" ${w.step===1?'disabled':''}>◀ Atgal</button>
+    ${w.step<6?`<button type="button" class="btn primary" data-wact="next">Toliau ▶</button>`:`<button type="button" class="btn primary" data-wact="create">Sukurti projektą</button>`}
+  </div>
+  <p class="note" style="text-align:center;margin:0"><button type="button" class="linkbtn" data-wact="skip">Praleisti – noriu viską nustatyti pats</button></p>`;
+  wzBind(w);
+}
+function wzLive(w){ const o=document.getElementById('wzMeasOut'); if(o){ const v=wzGv(w); o.innerHTML=v.sts&&v.rows?`Jūsų mėginys: <b>${fmt(v.sts)} ak.</b> ir <b>${fmt(v.rows)} eil.</b> per 10 cm.`:'Įveskite abu atstumus – apskaičiuosime akis ir eiles per 10 cm.'; } }
+function wzGo(w, step){ w.err=''; w.step=Math.min(6,Math.max(1,step)); w.max=Math.max(w.max,w.step); save(); viewWizard();
+  try{ const t=document.getElementById('wzTop'); if(t&&t.getBoundingClientRect().top<0) t.scrollIntoView({block:'start'}); }catch(e){} }
+function wzBind(w){
+  const rer=()=>{ wzFix(w); save(); viewWizard(); };
+  const V=document.getElementById('view');
+  V.querySelectorAll('[data-wmode]').forEach(b=>b.onclick=()=>{ w.mode=b.dataset.wmode; if(w.mode==='SK155') w.ribber=false; else if(w.mode==='SK280'&&b.getAttribute('aria-pressed')!=='true') w.ribber=true; w.err=''; rer(); });
+  V.querySelectorAll('[data-wseg]').forEach(g=>g.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=g.dataset.wseg, v=b.dataset.v;
+    if(k==='ribber') w.ribber=v==='1'; else w[k]=v; if(k==='who') w.size=''; w.err=''; rer(); }));
+  V.querySelectorAll('[data-wgk]').forEach(b=>b.onclick=()=>{ w.garment=b.dataset.wgk; w.size=''; w.err=''; rer(); });
+  V.querySelectorAll('button[class~="wz-card"]').forEach(b=>{ const a=[...b.attributes].find(x=>x.name.startsWith('data-wset-')); if(!a) return;
+    b.onclick=()=>{ const k=a.name.slice('data-wset-'.length).replace(/-([a-z])/g,(m,c)=>c.toUpperCase()); const real={neckshape:'neckShape'}[k]||k; w[real]=a.value; if(real==='pat'&&a.value!=='lib'){ w.libExt=false; } w.err=''; rer(); }; });
+  V.querySelectorAll('[data-wysrc]').forEach(b=>b.onclick=()=>{ w.ysrc='new'; w.yid=''; w.err=''; rer(); });
+  V.querySelectorAll('[data-wyid]').forEach(b=>b.onclick=()=>{ const Y=wzStash().find(y=>y.id===b.dataset.wyid); if(!Y) return;
+    w.ysrc='stash'; w.yid=Y.id; w.fiber=Y.fiber||w.fiber||''; w.spin=Y.spin||w.spin||''; w.cone=Y.cone||w.cone||'ne';
+    if(Y.gauge&&Y.gauge.sts>0&&Y.gauge.rows>0){ w.example=false; w.gm='direct'; w.sts=Y.gauge.sts; w.rows=Y.gauge.rows; if(Y.gauge.swG>0){ w.swG=Y.gauge.swG; if(w.mode==='hand'){ w.swW=Y.gauge.swW||0; w.swH=Y.gauge.swH||0; } } }
+    w.err=''; rer(); });
+  V.querySelectorAll('[data-wlib]').forEach(b=>b.onclick=()=>{ w.lib=b.dataset.wlib; w.libExt=false; w.err=''; rer(); });
+  V.querySelectorAll('[data-wstep]').forEach(b=>b.onclick=()=>{ const n=+b.dataset.wstep; if(n<=w.max) wzGo(w,n); });
+  V.querySelectorAll('details[data-wopen]').forEach(d=>d.addEventListener('toggle',()=>{ if(d.dataset.wopen==='own') w.ownOpen=d.open; else w.tipsOpen=d.open; save(); }));
+  const setv=(inp,obj)=>{ const k=(inp.dataset.w||inp.dataset.wy||inp.dataset.wo).replace(/^ny-/,''); const txt=inp.type==='text'||inp.tagName==='SELECT';
+    obj[k]= txt ? inp.value : (parseFloat(String(inp.value).replace(',','.'))||0); if(k==='name'&&obj===w) w.nameAuto=false; };
+  const tgt=inp=> inp.dataset.wy!=null ? w.ny : inp.dataset.wo!=null ? w.own : w;
+  V.querySelectorAll('[data-w],[data-wy],[data-wo]').forEach(inp=>{ if(inp.tagName==='BUTTON') return;
+    if(inp.tagName==='SELECT'){ inp.addEventListener('change',()=>{ setv(inp,tgt(inp)); rer(); }); return; }
+    // be perpiešimo: kitaip paspaudimas „Toliau“ (blur → change) pasimestų
+    inp.addEventListener('input',()=>{ setv(inp,tgt(inp)); save(); wzLive(w); });
+    inp.addEventListener('change',()=>{ setv(inp,tgt(inp)); save(); wzLive(w); });
+  });
+  V.querySelectorAll('[data-wact]').forEach(b=>b.onclick=()=>{ const a=b.dataset.wact;
+    if(a==='back') return wzGo(w,w.step-1);
+    if(a==='next'){ const e=wzValidate(w); if(e){ w.err=e; save(); viewWizard(); return; } return wzGo(w,w.step+1); }
+    if(a==='create'){ const e=wzValidate(w); if(e){ w.err=e; save(); viewWizard(); return; } return wzCreate(w); }
+    if(a==='restart'){ S.wiz=wzFresh(); save(); viewWizard(); return; }
+    if(a==='skip'){ S.wizDismissed=true; S.tab='meginys'; save(); render(); return; }
+    if(a==='example'){ w.example=true; w.err=''; rer(); return; }
+    if(a==='noexample'){ w.example=false; rer(); return; }
+    if(a==='morelib'){ w.libExt=true; w.lib=''; S.tab='rastai'; save(); render(); return; }
+  });
+}
+
+/* ---------- projekto sukūrimas ---------- */
+function wzCreate(w){
+  const c=wzCfg(w), R=buildFromCfg(c, w.size), gk=R.gk, hand=w.mode==='hand', y=wzYarn(w), g=wzGaugeObj(w);
+  // jei detalėse buvo ranka keistų matmenų – atsarginė kopija (kaip „Pritaikyti“)
+  if(S.manual&&S.manual[gk]){ S.projects.push({id:Date.now().toString(36)+'b', name:`${GARMENTS[gk].name} · atsarginė kopija ${new Date().toLocaleString('lt-LT')}`, garment:gk, machine:S.machine, params:clone(S.params[gk]), gauge:clone(S.gauges[S.machine])}); S.manual[gk]=false; }
+  // ankstesnio aktyvaus projekto pakeitimus išsaugome
+  wzSnapshotActive();
+  S.params[gk]=R.params; Object.keys(R.params).forEach(k=>S.edited[gk+'/'+k]=true);
+  S.cfg=Object.assign(defaultCfg(), S.cfg||{}, c);
+  if(hand){ const H=hkState(); Object.assign(H,{sts:g.sts, rows:g.rows, ribRows:g.ribRows, needle:String(w.needle||'').trim()||H.needle, swG:g.swG, swW:wzNum(w.swW)||(g.swG?10:H.swW||0), swH:wzNum(w.swH)||(g.swG?10:H.swH||0),
+      yarnM100:y.m100, skeinG:y.skeinG, method:w.hm, sock:w.sock, thumb:w.thumb}); hkState(); }
+  else { S.machine=w.mode; S.gauges[w.mode]=g; }
+  // siūlai → „Mano siūlai“
+  let yid='';
+  if(typeof stState==='function'){ stState(); S.stashOpt.hand=hand;
+    const gv=w.example?null:{sts:g.sts, rows:g.rows, ribRows:g.ribRows, swG:g.swG||0, swW:hand?(g.swG?g.swW:0):(g.swG?swatchSize(g,w.mode).w:0), swH:hand?(g.swG?g.swH:0):(g.swG?swatchSize(g,w.mode).h:0)};
+    if(w.ysrc==='new'){ const Y=stNormYarn({name:y.name, color:'#b8a07a', haveG:wzNum(w.ny.haveG), haveM:0, m100:y.m100, strands:1, gauge:gv?clone(gv):null, photo:''});
+      Object.assign(Y,{fiber:w.fiber, spin:w.spin, cone:w.cone, skeinG:y.skeinG}); S.stash.push(Y); yid=Y.id; }
+    else if(y.Y){ const Y=y.Y; Object.assign(Y,{fiber:w.fiber, spin:w.spin, cone:w.cone}); if(!Y.gauge&&gv) Y.gauge=clone(gv); yid=Y.id; }
+    if(yid){ const plan=stPlan(gk); plan.main=yid; }
+  }
+  // raštas
+  if(w.pat==='lib' && w.lib && typeof libApply==='function'){ try{ libApply(patState(), w.lib); }catch(e){} }
+  if(w.pat==='plain' && S.mPat && typeof S.mPat==='object') S.mPat.on=false;
+  const id='p'+Date.now().toString(36);
+  const fit=wzFitLabel(w);
+  S.cur={gk, who:wzWho(w), size:wzSizeLabel(w), fit, yarn:y.name, exampleGauge:!!w.example, mode:hand?'hand':w.mode, pat:w.pat, project:id};
+  S.garment=gk; S.piece=GARMENTS[gk].pieces[0].id; S.mPiece=gk+'/'+S.piece; S.mStep=0; S.mRC=0;
+  S.projects.push({id, name:String(w.name).trim(), garment:gk, machine:S.machine, mode:hand?'hand':'machine', params:clone(S.params[gk]), gauge:clone(S.gauges[S.machine]),
+    hand:hand?clone(S.hand):null, cur:clone(S.cur), yarnId:yid, wiz:true, date:new Date().toISOString()});
+  S.activeProject=id; S.wiz=null;
+  S.tab=hand?'rankinis':'iskarpos'; save(); render();
+  try{ window.scrollTo(0,0); }catch(e){}
+}
+
+/* ---------- projektų juosta (antraštėje) ---------- */
+function wzActive(){ const pr=(S.projects||[]).find(p=>p.id===S.activeProject); if(!pr) return null;
+  if(S.garment!==pr.garment) return null;
+  if(S.cur && S.cur.project!==pr.id) return null;
+  return pr; }
+// dabartinius aktyvaus projekto matmenis ir mėginį įrašome į jo kopiją (kad perjungiant nieko neprarastumėte)
+function wzSnapshotActive(){ const pr=wzActive(); if(!pr) return;
+  pr.params=clone(S.params[pr.garment]);
+  if(pr.mode==='hand'&&S.hand) pr.hand=clone(S.hand); else { pr.machine=S.machine; pr.gauge=clone(S.gauges[S.machine]); }
+  if(S.cur) pr.cur=clone(S.cur); }
+function wzLoad(pr){ if(!pr) return;
+  if(pr.id!==S.activeProject) wzSnapshotActive();
+  if(!GARMENTS[pr.garment]) return;
+  S.params[pr.garment]=clone(pr.params);
+  if(MACHINES[pr.machine]) S.machine=pr.machine;
+  if(pr.gauge) S.gauges[S.machine]=Object.assign(clone(DEF_GAUGE[S.machine]), clone(pr.gauge));
+  if(pr.mode==='hand'&&pr.hand){ S.hand=Object.assign(S.hand||{}, clone(pr.hand)); }
+  if(pr.mode&&S.stashOpt&&typeof S.stashOpt==='object') S.stashOpt.hand=pr.mode==='hand';
+  S.garment=pr.garment; S.piece=GARMENTS[pr.garment].pieces[0].id;
+  Object.keys(DEF[pr.garment]).forEach(k=>S.edited[pr.garment+'/'+k]=true);
+  S.cur=pr.cur?clone(pr.cur):null; if(S.cur) S.cur.project=pr.id;
+  S.activeProject=pr.id;
+  const keep=['rastai','stash','skaiciuokles','pagalba','konfig','masina'];
+  if(pr.mode==='hand') S.tab = keep.includes(S.tab)&&S.tab!=='masina' ? S.tab : 'rankinis';
+  else if(!keep.includes(S.tab)) S.tab='iskarpos';
+  save(); render(); }
+function wzProjBar(base){
+  const list=S.projects||[], pr=wzActive();
+  const exTag=pr&&pr.cur&&pr.cur.exampleGauge?' <span class="ex">pavyzdinis mėginys</span>':'';
+  const label = pr ? `Projektas: <b>${esc(pr.name)}</b>${exTag}` : (S.tab==='pradzia' ? (list.length?'Projektai:':'') : base);
+  const sel = list.length ? `<select id="pbSel" class="pb-sel" aria-label="Perjungti projektą">${pr?'':'<option value="">— atidaryti projektą —</option>'}${list.map(p=>`<option value="${esc(p.id)}" ${pr&&pr.id===p.id?'selected':''}>${esc(p.name)}</option>`).join('')}</select>` : '';
+  const stripes = pr&&pr.cur&&pr.cur.pat==='stripes'&&typeof viewStash==='function'&&S.tab!=='stash' ? '<button type="button" class="btn pb-btn" id="pbStripes">Dryžiai → Mano siūlai</button>' : '';
+  return `${label?`<span class="pb-name">${label}</span>`:''}${sel}${stripes}${S.tab==='pradzia'&&!pr?'':'<button type="button" class="btn pb-btn" id="pbNew">＋ Naujas</button>'}`;
+}
+function wzBindBar(){
+  const s=document.getElementById('pbSel'); if(s) s.onchange=()=>{ const pr=(S.projects||[]).find(p=>p.id===s.value); if(pr) wzLoad(pr); };
+  const n=document.getElementById('pbNew'); if(n) n.onclick=()=>{ S.tab='pradzia'; save(); render(); };
+  const st=document.getElementById('pbStripes'); if(st) st.onclick=()=>{ S.tab='stash'; save(); render(); };
+}
+// pirmas paleidimas: vedlys atsidaro savaime
+try{ if(!S.wizDismissed && !S.cur && !Object.keys(S.edited||{}).length) S.tab='pradzia'; }catch(e){}
 
 /* ================= KALBOS (LT / EN / NO) =================
    Tekstas verčiamas jau nupieštame puslapyje: skaičiai pakeičiami „#“, randamas vertimas žodyne,
