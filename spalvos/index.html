@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#7a3e6b">
+<meta name="theme-color" content="#9c4a8a">
 <meta name="description" content="Siūlų spalvų derinimas pagal nuotrauką ir 12 spalvinių tipų">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -13,7 +13,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700;800&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
 /* Išdėstymas: viena kolona telefonui, dvi – kompiuteriui; nuotrauka viršuje, paletė ir analizė po ja */
 :root{
@@ -31,6 +31,7 @@
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;margin:0;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 40px}
 .wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.seg{display:inline-flex;background:var(--sunk,#eee);border:1px solid var(--line);border-radius:8px;padding:3px;gap:3px}.seg button{border:0;background:transparent;color:var(--ink);font:600 .8rem var(--f-body);padding:6px 9px;border-radius:6px;cursor:pointer;min-height:36px}.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
 header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
 header h1{font-family:var(--f-display);font-weight:800;font-size:1.4rem;margin:0}
 header span{font-size:.82rem;color:var(--muted)}
@@ -89,6 +90,25 @@ label.f select{border:1px solid var(--line);border-radius:7px;background:var(--s
 .samples div{display:flex;align-items:center;gap:6px;font-size:.82rem}
 .samples i{width:22px;height:22px;border-radius:5px;border:1px solid var(--line);display:inline-block}
 @media (max-width:640px){ body{font-size:16px} .btn{min-height:44px;flex:1 1 auto} .axis{grid-template-columns:90px minmax(0,1fr) 40px} }
+
+/* ===== Šiltas dizainas – kaip mezgimo programoje ===== */
+:root{ --bg:#fbf4ef; --surface:#fffbf8; --sunk:#f7ebe5; --ink:#3b2a31; --muted:#86707a; --line:#ecd9d1;
+  --accent:#9c4a8a; --accent-2:#d88a6e; --accent-soft:#f5e1ef; --accent-ink:#fff;
+  --f-display:'Fraunces',Georgia,serif; --f-body:'Nunito',system-ui,-apple-system,'Segoe UI',sans-serif; --f-mono:'DM Mono',ui-monospace,Menlo,monospace;
+  --r:16px; --shadow:0 1px 2px rgba(120,60,80,.06),0 6px 22px -10px rgba(150,70,100,.22); }
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){ --bg:#1c1418; --surface:#261b20; --sunk:#20171b; --ink:#f3e6ea; --muted:#bba2ac; --line:#3e2c34; --accent:#e29ad2; --accent-2:#f0a98c; --accent-soft:#3e2639; --accent-ink:#2a1219; --shadow:0 8px 24px -12px rgba(0,0,0,.6); color-scheme:dark}}
+body{background-color:var(--bg);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='20' viewBox='0 0 24 20'%3E%3Cpath d='M2 4 L6 12 L10 4 M14 4 L18 12 L22 4' fill='none' stroke='%239c4a8a' stroke-opacity='.06' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");font-size:15.5px}
+header h1{font-family:var(--f-display);font-weight:700;background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.panel{border-radius:var(--r)!important;box-shadow:var(--shadow)}
+.panel h2{font-family:var(--f-display)}
+.btn{border-radius:999px!important;transition:transform .15s,box-shadow .2s}
+.btn:hover{transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2))!important;border-color:transparent!important}
+nav{border-bottom:0!important;gap:6px!important;padding:6px 0}
+nav button{border:0!important;border-radius:999px!important;margin:0!important;transition:background .2s}
+nav button[aria-selected="true"]{background:var(--surface)!important;color:var(--accent)!important;box-shadow:var(--shadow)}
+.seg{border-radius:999px}.seg button{border-radius:999px}
+@media (prefers-reduced-motion:no-preference){ #view>*{animation:rise .35s ease both} @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}} }
 </style>
 
 <div class="wrap" id="app"></div>
@@ -221,9 +241,10 @@ function kmeans(slot, k, wb){
 /* ---------- PIEŠIMAS ---------- */
 function render(){
   try{
-  $('#app').innerHTML=`<header><div><h1>Spalvų pagalbininkas</h1><span>Siūlų spalvų derinimas ir 12 spalvinių tipų</span></div><a class="appswitch" href="${window.top===window.self?'../':'https://imgroupeu-lgtm.github.io/silver-reed-pagalbininkas/'}"${window.top===window.self?'':' target="_blank" rel="noopener"'}><b>←</b> 🧶 Mezgimo programa</a></header>
+  $('#app').innerHTML=`<header><div><h1>Spalvų pagalbininkas</h1><span>Siūlų spalvų derinimas ir 12 spalvinių tipų</span></div><a class="appswitch" href="${window.top===window.self?'../':'https://imgroupeu-lgtm.github.io/silver-reed-pagalbininkas/'}"${window.top===window.self?'':' target="_blank" rel="noopener"'}><b>←</b> 🧶 Mezgimo programa</a>${typeof langPicker==='function'?langPicker():''}</header>
    <nav>${[['siulai','Siūlų spalvos'],['tipas','Spalvinis tipas'],['apie','Kaip veikia']].map(([id,l])=>`<button data-tab="${id}" aria-selected="${S.tab===id}">${l}</button>`).join('')}</nav>
    <main id="view"></main>`;
+  if(typeof bindLang==='function') bindLang();
   document.querySelectorAll('nav [data-tab]').forEach(b=>b.onclick=()=>{ S.tab=b.dataset.tab; save(); render(); });
   ({siulai:viewYarn, tipas:viewPerson, apie:viewAbout})[S.tab] ? ({siulai:viewYarn, tipas:viewPerson, apie:viewAbout})[S.tab]() : viewYarn();
   }catch(err){ $('#app').innerHTML=`<div class="panel"><h2>Klaida</h2><p class="note">${esc(err.message)}</p><button class="btn primary" id="rst">Atkurti programą</button></div>`; $('#rst').onclick=()=>{ try{localStorage.removeItem(KEY);}catch(e){} S=fresh(); render(); }; }
@@ -368,7 +389,358 @@ function viewAbout(){
      <li>Spalvinių tipų sistema – stilistų metodas, moksliškai nepatvirtintas; rezultatas – rekomendacija.</li></ul>
      <p class="note">Nuotraukos niekur nesiunčiamos ir neišsaugomos – lieka tik atidarytame lange.</p></section></div>`;
 }
+const I18N_SP_EN = {
+  "# tipų – pagrindinė ir antroji savybė iš šešių: šviesus, tamsus, šiltas, šaltas, ryškus, prislopintas (Sterling Style Academy aprašymas).": "# types – main and secondary trait out of six: light, deep, warm, cool, bright, muted (Sterling Style Academy description).",
+  "## · L # · C # · h #°": "## · L # · C # · h #°",
+  "##a#": "##a#",
+  "##a#ca#": "##a#ca#",
+  "##a#e#": "##a#e#",
+  "##ae": "##ae",
+  "##b#": "##b#",
+  "##b#c#": "##b#c#",
+  "##b#d": "##b#d",
+  "##d#ae": "##d#ae",
+  "##e#f": "##e#f",
+  "##ea#": "##ea#",
+  "##f#": "##f#",
+  "##f#e#f": "##f#e#f",
+  "#. Ar raštas bus matomas": "#. Will the pattern be visible",
+  "#. Jūsų siūlų paletė (#)": "#. Your yarn palette (#)",
+  "#. Kas tinka prie ★ spalvos": "#. What goes with the ★ color",
+  "#. Keli klausimai": "#. A few questions",
+  "#. Nufotografuokite siūlus": "#. Photograph your yarn",
+  "#. Rezultatas": "#. Result",
+  "#. Veido nuotrauka": "#. Face photo",
+  "#a#": "#a#",
+  "#ad#": "#ad#",
+  "#afbac#": "#afbac#",
+  "#c# · L # · C # · h #°": "#c# · L # · C # · h #°",
+  "#eee#dd": "#eee#dd",
+  "#eee#dd · L # · C # · h #°": "#eee#dd · L # · C # · h #°",
+  "+ Spalva rankiniu būdu": "+ Add color manually",
+  ", antroji –": ", secondary –",
+  ". Artimiausias kitas tipas: Prislopinta vasara.": ". Closest other type: Soft Summer.",
+  "Abu vienodai": "Both equally",
+  "Akys (rainelė)": "Eyes (iris)",
+  "Akys: —": "Eyes: —",
+  "Atkurti programą": "Reset app",
+  "Auksas": "Gold",
+  "Automatinis spalvų radimas – k-vidurkių grupavimas; mažesnės nei # % nuotraukos spalvos atmetamos.": "Automatic color detection – k-means clustering; colors making up less than # % of the photo are discarded.",
+  "Balta pataisa nepritaikyta – spalvos gali būti pasislinkusios dėl apšvietimo.": "White balance not applied – colors may be shifted by the lighting.",
+  "Baltas lapas": "White sheet",
+  "Balto lapo pataisa: pagal paspaustą baltą vietą suvienodinami raudonas, žalias ir mėlynas kanalai.": "White sheet correction: the red, green and blue channels are equalized based on the white spot you tapped.",
+  "Be baltos pataisos": "Without white balance",
+  "Cannot read properties of undefined (reading 'oda')": "Cannot read properties of undefined (reading 'oda')",
+  "Dešinėje – kaip raštas atrodo nespalvotai. Jei ten susilieja, ir spalvotai raštas bus neryškus.": "On the right – how the pattern looks without color. If it blends together there, the pattern will look faint in color too.",
+  "Dienos šviesa prie lango, be makiažo, be blykstės. Šalia veido – baltas lapas. Nuotrauka lieka tik jūsų telefone.": "Daylight by a window, no makeup, no flash. A white sheet of paper next to the face. The photo stays only on your phone.",
+  "Dienos šviesoje, be blykstės. Į kadrą įdėkite baltą popieriaus lapą – pagal jį pataisysime apšvietimo atspalvį.": "In daylight, no flash. Put a white sheet of paper in the frame – we will use it to correct the lighting tint.",
+  "EN": "EN",
+  "Fonas": "Background",
+  "Fotografuoti / įkelti": "Take photo / upload",
+  "Greitai nudega": "Burns quickly",
+  "Gretimos": "Analogous",
+  "Grąžinti matavimą": "Restore measurement",
+  "Harmonijos – pagal spalvų ratą (CIELAB atspalvio kampas): papildoma, gretimos, trijų spalvų, suskaidyta papildoma, monochrominė.": "Harmonies – based on the color wheel (CIELAB hue angle): complementary, analogous, triadic, split-complementary, monochromatic.",
+  "Idealus tonas ##a#ac": "Ideal tone ##a#ac",
+  "Idealus tonas ##a#b": "Ideal tone ##a#b",
+  "Idealus tonas ##d#": "Ideal tone ##d#",
+  "Idealus tonas ##dc#": "Ideal tone ##dc#",
+  "Idealus tonas ##e#ac#": "Ideal tone ##e#ac#",
+  "Idealus tonas #a#d#": "Ideal tone #a#d#",
+  "Idealus tonas #cd#": "Ideal tone #cd#",
+  "Idealus tonas #f#c#a#": "Ideal tone #f#c#a#",
+  "Ir taip, ir taip": "Both",
+  "Išvalyti paletę": "Clear palette",
+  "Jūsų savybės": "Your traits",
+  "Jūsų siūlai šiam tipui": "Your yarns for this type",
+  "Kaip veikia": "How it works",
+  "Kairysis kvadratėlis – idealus tonas pagal spalvų ratą, dešinysis – artimiausi jūsų siūlai.": "Left square – the ideal tone from the color wheel, right – your closest yarns.",
+  "Kalba": "Language",
+  "Klaida": "Error",
+  "Kontrastas": "Contrast",
+  "Kontrastas pagal WCAG santykį (#:# ir daugiau – aiškiai skiriasi). Fair isle raštui svarbu šviesumo skirtumas, ne tik atspalvis.": "Contrast by WCAG ratio (#:# and above – clearly distinguishable). For fair isle patterns the lightness difference matters, not just the hue.",
+  "Kontrastas – WCAG šviesumo santykis.": "Contrast – WCAG luminance ratio.",
+  "LT": "LT",
+  "Labiau tinka": "Suits better",
+  "Lengvai įdega": "Tans easily",
+  "Melsvos ar violetinės": "Bluish or purple",
+  "Monochrominė": "Monochromatic",
+  "NO": "NO",
+  "Nuotraukos niekur nesiunčiamos ir neišsaugomos – lieka tik atidarytame lange.": "Photos are never sent anywhere or saved – they stay only in the open window.",
+  "Oda (skruostas)": "Skin (cheek)",
+  "Oda: —": "Skin: —",
+  "Pagrindinė savybė –": "Main trait –",
+  "Pagrindinė spalva": "Main color",
+  "Paimti spalvą": "Pick color",
+  "Papildoma": "Complementary",
+  "Paspausti baltą lapą": "Tap the white sheet",
+  "Pavadinimas": "Name",
+  "Pašalinti": "Remove",
+  "Per mažai duomenų: pažymėkite odą ir plaukus arba akis, atsakykite į klausimus. Kol kas rezultatas apytikslis.": "Not enough data: mark skin and hair or eyes, and answer the questions. For now the result is approximate.",
+  "Plaukai": "Hair",
+  "Plaukai: —": "Hair: —",
+  "Pora": "Pair",
+  "Prislopinta vasara": "Soft Summer",
+  "Prislopintas ruduo": "Soft Autumn",
+  "Raštas": "Pattern",
+  "Rašto peržiūra": "Pattern preview",
+  "Rašto peržiūra pilka": "Pattern preview in gray",
+  "Rašto peržiūra spalvota": "Pattern preview in color",
+  "Raštui": "For the pattern",
+  "Rodyti tipą": "Show type",
+  "Ruda": "Brown",
+  "Ryški žiema": "Bright Winter",
+  "Ryškumas": "Clarity",
+  "Ryškus pavasaris": "Bright Spring",
+  "Saulėje oda": "Skin in the sun",
+  "Sidabras": "Silver",
+  "Siūlų pavadinimas": "Yarn name",
+  "Siūlų spalvos": "Yarn colors",
+  "Siūlų spalvų derinimas ir # spalvinių tipų": "Yarn color matching and # color types",
+  "Skaičių ribos ir tipų tikslinės reikšmės yra šios programos interpretacija, ne oficialus standartas. Juos galite pakoreguoti slankikliais.": "The numeric thresholds and the target values of the types are this app's interpretation, not an official standard. You can adjust them with the sliders.",
+  "Spalvinis tipas": "Color type",
+  "Spalvinių tipų sistema – stilistų metodas, moksliškai nepatvirtintas; rezultatas – rekomendacija.": "The color type system is a stylists' method, not scientifically validated; the result is a recommendation.",
+  "Spalvos skaičiuojamos CIELAB erdvėje (sRGB, D#). Panašumas – CIEDE# formulė.": "Colors are computed in CIELAB space (sRGB, D#). Similarity – CIEDE# formula.",
+  "Spalvų pagalbininkas": "Color helper",
+  "Sunku pasakyti": "Hard to tell",
+  "Suskaidyta papildoma": "Split-complementary",
+  "Tai rekomendacija, ne verdiktas: spalvinių tipų sistema yra stilistų metodas, o telefono kamera ir apšvietimas spalvas iškraipo.": "This is a recommendation, not a verdict: the color type system is a stylists' method, and the phone camera and lighting distort colors.",
+  "Tamsi žiema": "Deep Winter",
+  "Tamsus ruduo": "Deep Autumn",
+  "Temperatūra": "Temperature",
+  "Temperatūra – iš odos atspalvio ir atsakymų; šviesumas – iš odos, plaukų, akių šviesumo; ryškumas – iš akių ryškumo ir plaukų bei odos kontrasto.": "Temperature – from skin undertone and your answers; lightness – from the lightness of skin, hair and eyes; clarity – from eye brightness and the contrast between hair and skin.",
+  "Tipui būdingos spalvos": "Colors typical of the type",
+  "Trijų spalvų": "Triadic",
+  "Venos ant riešo atrodo": "Veins on the wrist look",
+  "aiškiai matomas": "clearly visible",
+  "artima": "close",
+  "galima": "possible",
+  "netinka": "doesn't suit",
+  "nėra": "none",
+  "pagal matavimą": "from measurement",
+  "prislopinta": "muted",
+  "prislopintas": "muted",
+  "ryšku": "bright",
+  "tamsu": "dark",
+  "Čia atsiras nuotrauka. Paspauskite ant siūlų, kad paimtumėte spalvą.": "The photo will appear here. Tap the yarn to pick a color.",
+  "Įkelkite nuotrauką, pasirinkite, ką žymite, ir paspauskite toje vietoje.": "Upload a photo, choose what you are marking, and tap that spot.",
+  "Šalta vasara": "Cool Summer",
+  "Šalta žiema": "Cool Winter",
+  "Šiltas pavasaris": "Warm Spring",
+  "Šiltas ruduo": "Warm Autumn",
+  "Šviesi vasara": "Light Summer",
+  "Šviesumas": "Lightness",
+  "Šviesumo skirtumas": "Lightness difference",
+  "Šviesus pavasaris": "Light Spring",
+  "šalta": "cool",
+  "šaltas": "cool",
+  "šilta": "warm",
+  "švelnus": "soft",
+  "šviesu": "light",
+  "Žalsvos": "Greenish",
+  "🧶 Mezgimo programa": "🧶 Knitting app"
+};
+
+const I18N_SP_NB = {
+  "# tipų – pagrindinė ir antroji savybė iš šešių: šviesus, tamsus, šiltas, šaltas, ryškus, prislopintas (Sterling Style Academy aprašymas).": "# typer – hovedtrekk og andretrekk av seks: lys, mørk, varm, kjølig, klar, dempet (beskrivelse fra Sterling Style Academy).",
+  "## · L # · C # · h #°": "## · L # · C # · h #°",
+  "##a#": "##a#",
+  "##a#ca#": "##a#ca#",
+  "##a#e#": "##a#e#",
+  "##ae": "##ae",
+  "##b#": "##b#",
+  "##b#c#": "##b#c#",
+  "##b#d": "##b#d",
+  "##d#ae": "##d#ae",
+  "##e#f": "##e#f",
+  "##ea#": "##ea#",
+  "##f#": "##f#",
+  "##f#e#f": "##f#e#f",
+  "#. Ar raštas bus matomas": "#. Vil mønsteret synes",
+  "#. Jūsų siūlų paletė (#)": "#. Din garnpalett (#)",
+  "#. Kas tinka prie ★ spalvos": "#. Hva som passer til ★-fargen",
+  "#. Keli klausimai": "#. Noen spørsmål",
+  "#. Nufotografuokite siūlus": "#. Fotografer garnet",
+  "#. Rezultatas": "#. Resultat",
+  "#. Veido nuotrauka": "#. Bilde av ansiktet",
+  "#a#": "#a#",
+  "#ad#": "#ad#",
+  "#afbac#": "#afbac#",
+  "#c# · L # · C # · h #°": "#c# · L # · C # · h #°",
+  "#eee#dd": "#eee#dd",
+  "#eee#dd · L # · C # · h #°": "#eee#dd · L # · C # · h #°",
+  "+ Spalva rankiniu būdu": "+ Legg til farge manuelt",
+  ", antroji –": ", andretrekk –",
+  ". Artimiausias kitas tipas: Prislopinta vasara.": ". Nærmeste andre type: Myk sommer.",
+  "Abu vienodai": "Begge like mye",
+  "Akys (rainelė)": "Øyne (iris)",
+  "Akys: —": "Øyne: —",
+  "Atkurti programą": "Tilbakestill appen",
+  "Auksas": "Gull",
+  "Automatinis spalvų radimas – k-vidurkių grupavimas; mažesnės nei # % nuotraukos spalvos atmetamos.": "Automatisk fargefinning – k-means-gruppering; farger som utgjør mindre enn # % av bildet, forkastes.",
+  "Balta pataisa nepritaikyta – spalvos gali būti pasislinkusios dėl apšvietimo.": "Hvitbalanse er ikke brukt – fargene kan være forskjøvet på grunn av belysningen.",
+  "Baltas lapas": "Hvitt ark",
+  "Balto lapo pataisa: pagal paspaustą baltą vietą suvienodinami raudonas, žalias ir mėlynas kanalai.": "Korrigering med hvitt ark: rød, grønn og blå kanal utjevnes ut fra det hvite punktet du trykket på.",
+  "Be baltos pataisos": "Uten hvitbalanse",
+  "Cannot read properties of undefined (reading 'oda')": "Cannot read properties of undefined (reading 'oda')",
+  "Dešinėje – kaip raštas atrodo nespalvotai. Jei ten susilieja, ir spalvotai raštas bus neryškus.": "Til høyre – hvordan mønsteret ser ut uten farger. Hvis det flyter sammen der, blir mønsteret også utydelig i farger.",
+  "Dienos šviesa prie lango, be makiažo, be blykstės. Šalia veido – baltas lapas. Nuotrauka lieka tik jūsų telefone.": "Dagslys ved et vindu, uten sminke, uten blitz. Et hvitt ark ved siden av ansiktet. Bildet blir bare på telefonen din.",
+  "Dienos šviesoje, be blykstės. Į kadrą įdėkite baltą popieriaus lapą – pagal jį pataisysime apšvietimo atspalvį.": "I dagslys, uten blitz. Legg et hvitt papirark i bildet – vi bruker det til å korrigere belysningens fargetone.",
+  "EN": "EN",
+  "Fonas": "Bakgrunn",
+  "Fotografuoti / įkelti": "Ta bilde / last opp",
+  "Greitai nudega": "Brenner seg raskt",
+  "Gretimos": "Analoge",
+  "Grąžinti matavimą": "Gjenopprett måling",
+  "Harmonijos – pagal spalvų ratą (CIELAB atspalvio kampas): papildoma, gretimos, trijų spalvų, suskaidyta papildoma, monochrominė.": "Harmonier – ut fra fargesirkelen (CIELAB-fargetonevinkel): komplementær, analoge, triadisk, splittet komplementær, monokromatisk.",
+  "Idealus tonas ##a#ac": "Ideell tone ##a#ac",
+  "Idealus tonas ##a#b": "Ideell tone ##a#b",
+  "Idealus tonas ##d#": "Ideell tone ##d#",
+  "Idealus tonas ##dc#": "Ideell tone ##dc#",
+  "Idealus tonas ##e#ac#": "Ideell tone ##e#ac#",
+  "Idealus tonas #a#d#": "Ideell tone #a#d#",
+  "Idealus tonas #cd#": "Ideell tone #cd#",
+  "Idealus tonas #f#c#a#": "Ideell tone #f#c#a#",
+  "Ir taip, ir taip": "Begge deler",
+  "Išvalyti paletę": "Tøm paletten",
+  "Jūsų savybės": "Dine trekk",
+  "Jūsų siūlai šiam tipui": "Garnene dine for denne typen",
+  "Kaip veikia": "Slik fungerer det",
+  "Kairysis kvadratėlis – idealus tonas pagal spalvų ratą, dešinysis – artimiausi jūsų siūlai.": "Venstre rute – ideell tone fra fargesirkelen, høyre – garnene dine som ligger nærmest.",
+  "Kalba": "Språk",
+  "Klaida": "Feil",
+  "Kontrastas": "Kontrast",
+  "Kontrastas pagal WCAG santykį (#:# ir daugiau – aiškiai skiriasi). Fair isle raštui svarbu šviesumo skirtumas, ne tik atspalvis.": "Kontrast etter WCAG-forhold (#:# og over – tydelig forskjellige). For fair isle-mønster er lysforskjellen viktig, ikke bare fargetonen.",
+  "Kontrastas – WCAG šviesumo santykis.": "Kontrast – WCAG-lysstyrkeforhold.",
+  "LT": "LT",
+  "Labiau tinka": "Passer bedre",
+  "Lengvai įdega": "Brunes lett",
+  "Melsvos ar violetinės": "Blålige eller lilla",
+  "Monochrominė": "Monokromatisk",
+  "NO": "NO",
+  "Nuotraukos niekur nesiunčiamos ir neišsaugomos – lieka tik atidarytame lange.": "Bilder sendes ingen steder og lagres ikke – de blir bare i det åpne vinduet.",
+  "Oda (skruostas)": "Hud (kinn)",
+  "Oda: —": "Hud: —",
+  "Pagrindinė savybė –": "Hovedtrekk –",
+  "Pagrindinė spalva": "Hovedfarge",
+  "Paimti spalvą": "Velg farge",
+  "Papildoma": "Komplementær",
+  "Paspausti baltą lapą": "Trykk på det hvite arket",
+  "Pavadinimas": "Navn",
+  "Pašalinti": "Fjern",
+  "Per mažai duomenų: pažymėkite odą ir plaukus arba akis, atsakykite į klausimus. Kol kas rezultatas apytikslis.": "For lite data: merk hud og hår eller øyne, og svar på spørsmålene. Foreløpig er resultatet omtrentlig.",
+  "Plaukai": "Hår",
+  "Plaukai: —": "Hår: —",
+  "Pora": "Par",
+  "Prislopinta vasara": "Myk sommer",
+  "Prislopintas ruduo": "Myk høst",
+  "Raštas": "Mønster",
+  "Rašto peržiūra": "Mønsterforhåndsvisning",
+  "Rašto peržiūra pilka": "Mønsterforhåndsvisning i grått",
+  "Rašto peržiūra spalvota": "Mønsterforhåndsvisning i farger",
+  "Raštui": "Til mønsteret",
+  "Rodyti tipą": "Vis type",
+  "Ruda": "Brun",
+  "Ryški žiema": "Klar vinter",
+  "Ryškumas": "Klarhet",
+  "Ryškus pavasaris": "Klar vår",
+  "Saulėje oda": "Huden i solen",
+  "Sidabras": "Sølv",
+  "Siūlų pavadinimas": "Garnnavn",
+  "Siūlų spalvos": "Garnfarger",
+  "Siūlų spalvų derinimas ir # spalvinių tipų": "Fargekombinering av garn og # fargetyper",
+  "Skaičių ribos ir tipų tikslinės reikšmės yra šios programos interpretacija, ne oficialus standartas. Juos galite pakoreguoti slankikliais.": "Tallgrensene og typenes målverdier er denne appens tolkning, ikke en offisiell standard. Du kan justere dem med glidebryterne.",
+  "Spalvinis tipas": "Fargetype",
+  "Spalvinių tipų sistema – stilistų metodas, moksliškai nepatvirtintas; rezultatas – rekomendacija.": "Fargetypesystemet er en stylistmetode og ikke vitenskapelig bekreftet; resultatet er en anbefaling.",
+  "Spalvos skaičiuojamos CIELAB erdvėje (sRGB, D#). Panašumas – CIEDE# formulė.": "Farger beregnes i CIELAB-rommet (sRGB, D#). Likhet – CIEDE#-formelen.",
+  "Spalvų pagalbininkas": "Fargehjelper",
+  "Sunku pasakyti": "Vanskelig å si",
+  "Suskaidyta papildoma": "Splittet komplementær",
+  "Tai rekomendacija, ne verdiktas: spalvinių tipų sistema yra stilistų metodas, o telefono kamera ir apšvietimas spalvas iškraipo.": "Dette er en anbefaling, ikke en dom: fargetypesystemet er en stylistmetode, og mobilkameraet og belysningen forvrenger fargene.",
+  "Tamsi žiema": "Dyp vinter",
+  "Tamsus ruduo": "Dyp høst",
+  "Temperatūra": "Temperatur",
+  "Temperatūra – iš odos atspalvio ir atsakymų; šviesumas – iš odos, plaukų, akių šviesumo; ryškumas – iš akių ryškumo ir plaukų bei odos kontrasto.": "Temperatur – fra hudens undertone og svarene dine; lyshet – fra lysheten i hud, hår og øyne; klarhet – fra øynenes klarhet og kontrasten mellom hår og hud.",
+  "Tipui būdingos spalvos": "Farger som er typiske for typen",
+  "Trijų spalvų": "Triadisk",
+  "Venos ant riešo atrodo": "Venene på håndleddet ser ut",
+  "aiškiai matomas": "tydelig synlig",
+  "artima": "nær",
+  "galima": "mulig",
+  "netinka": "passer ikke",
+  "nėra": "ingen",
+  "pagal matavimą": "etter målingen",
+  "prislopinta": "dempet",
+  "prislopintas": "dempet",
+  "ryšku": "klart",
+  "tamsu": "mørkt",
+  "Čia atsiras nuotrauka. Paspauskite ant siūlų, kad paimtumėte spalvą.": "Bildet vises her. Trykk på garnet for å velge en farge.",
+  "Įkelkite nuotrauką, pasirinkite, ką žymite, ir paspauskite toje vietoje.": "Last opp et bilde, velg hva du markerer, og trykk på det stedet.",
+  "Šalta vasara": "Kjølig sommer",
+  "Šalta žiema": "Kjølig vinter",
+  "Šiltas pavasaris": "Varm vår",
+  "Šiltas ruduo": "Varm høst",
+  "Šviesi vasara": "Lys sommer",
+  "Šviesumas": "Lyshet",
+  "Šviesumo skirtumas": "Lysforskjell",
+  "Šviesus pavasaris": "Lys vår",
+  "šalta": "kjølig",
+  "šaltas": "kjølig",
+  "šilta": "varmt",
+  "švelnus": "myk",
+  "šviesu": "lyst",
+  "Žalsvos": "Grønnaktige",
+  "🧶 Mezgimo programa": "🧶 Strikkeappen"
+};
+
+
+(function(){ try{ S.lang=(JSON.parse(localStorage.getItem('srp-v2')||'{}').lang)||'lt'; }catch(e){ S.lang='lt'; } })();
+/* ================= KALBOS (LT / EN / NO) =================
+   Tekstas verčiamas jau nupieštame puslapyje: skaičiai pakeičiami „#“, randamas vertimas žodyne,
+   skaičiai grąžinami ta pačia tvarka. Žodynai: I18N_EN, I18N_NB (failai i18n_en.js, i18n_nb.js). */
+const LANGS=[['lt','LT'],['en','EN'],['nb','NO']];
+const I18N={ en: (typeof I18N_EN!=='undefined'?I18N_EN:{}), nb: (typeof I18N_NB!=='undefined'?I18N_NB:{}) };
+const NUM_RE=/\d+(?:[.,]\d+)?/g;
+const I18N_MISS=new Set();
+function i18nKey(s){ return s.replace(/\s+/g,' ').trim().replace(NUM_RE,'#'); }
+function i18nTr(s, lang){
+  lang=lang||S.lang; if(!lang||lang==='lt') return s;
+  const D=I18N[lang]; if(!D) return s;
+  const core=s.replace(/\s+/g,' ').trim(); if(!core || !/[A-Za-zĄČĘĖĮŠŲŪŽąčęėįšųūž]/.test(core)) return s;
+  const nums=core.match(NUM_RE)||[]; const key=core.replace(NUM_RE,'#');
+  let t=D[key];
+  if(t==null){ I18N_MISS.add(key); return s; }
+  let i=0; const conv=n=> (lang==='en') ? n.replace(',','.') : n.replace('.',',');
+  t=t.replace(/#/g,()=> i<nums.length ? conv(nums[i++]) : '#');
+  const lead=s.match(/^\s*/)[0], tail=s.match(/\s*$/)[0];
+  return lead+t+tail;
+}
+function i18nApply(root){
+  if(!S.lang||S.lang==='lt'||!root) return;
+  const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode:n=>{ const p=n.parentNode; if(!p) return NodeFilter.FILTER_REJECT; const tg=p.nodeName; return (tg==='SCRIPT'||tg==='STYLE'||tg==='TEXTAREA')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT; }});
+  const list=[]; while(w.nextNode()) list.push(w.currentNode);
+  list.forEach(n=>{ if(n.__tr===n.nodeValue) return; const v=i18nTr(n.nodeValue); if(v!==n.nodeValue){ n.nodeValue=v; } n.__tr=n.nodeValue; });
+  const els=root.querySelectorAll ? root.querySelectorAll('[placeholder],[title],[aria-label]') : [];
+  els.forEach(el=>['placeholder','title','aria-label'].forEach(a=>{ const v=el.getAttribute(a); if(v){ const t=i18nTr(v); if(t!==v) el.setAttribute(a,t); } }));
+}
+let i18nObs=null, i18nBusy=false;
+function i18nStart(){
+  const app=document.getElementById('app'); if(!app || typeof MutationObserver==='undefined') return;
+  if(i18nObs) i18nObs.disconnect();
+  i18nObs=new MutationObserver(()=>{ if(i18nBusy) return; i18nBusy=true; try{ i18nApply(app); const pa=document.getElementById('printAll'); if(pa) i18nApply(pa); } finally{ i18nBusy=false; } });
+  i18nObs.observe(app,{childList:true,subtree:true});
+  const pa=document.body; if(pa) i18nObs.observe(pa,{childList:true});
+  i18nApply(app);
+  try{ document.documentElement.lang = S.lang==='nb'?'nb':(S.lang||'lt'); }catch(e){}
+}
+function langPicker(){ return `<div class="seg langs noprint" role="group" aria-label="Kalba">${LANGS.map(([k,l])=>`<button data-lang="${k}" aria-pressed="${(S.lang||'lt')===k}">${l}</button>`).join('')}</div>`; }
+function bindLang(){ document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{ S.lang=b.dataset.lang; try{ const o=JSON.parse(localStorage.getItem('srp-v2')||'{}'); o.lang=S.lang; localStorage.setItem('srp-v2',JSON.stringify(o)); }catch(e){} render(); }); }
+
+if(typeof I18N_SP_EN!=='undefined') Object.assign(I18N.en, I18N_SP_EN);
+if(typeof I18N_SP_NB!=='undefined') Object.assign(I18N.nb, I18N_SP_NB);
+
 render();
+if(typeof i18nStart==='function') i18nStart();
 </script>
 
 <script>
