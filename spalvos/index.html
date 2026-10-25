@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7a3e6b">
+<meta name="description" content="Siūlų spalvų derinimas pagal nuotrauką ir 12 spalvinių tipų">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<title>Spalvų pagalbininkas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Išdėstymas: viena kolona telefonui, dvi – kompiuteriui; nuotrauka viršuje, paletė ir analizė po ja */
+:root{
+  --bg:#f1efec; --surface:#ffffff; --sunk:#f7f6f4; --ink:#1f2224; --muted:#62676b; --line:#d8d4cf;
+  --accent:#7a3e6b; --accent-soft:#f1e3ec; --accent-ink:#ffffff; --ok:#2d7a4b; --mid:#9a6a00; --bad:#a5432c; --warn-bg:#fbf0dc;
+  --f-display:'Archivo','Arial Narrow',system-ui,sans-serif; --f-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif; --f-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#161417; --surface:#1f1c20; --sunk:#19171a; --ink:#ebe7ea; --muted:#a8a1a6; --line:#37323a;
+  --accent:#d796c6; --accent-soft:#3a2636; --accent-ink:#1a0f17; --ok:#79c99a; --mid:#e7b25a; --bad:#e58a70; --warn-bg:#33291a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#161417; --surface:#1f1c20; --sunk:#19171a; --ink:#ebe7ea; --muted:#a8a1a6; --line:#37323a;
+  --accent:#d796c6; --accent-soft:#3a2636; --accent-ink:#1a0f17; --ok:#79c99a; --mid:#e7b25a; --bad:#e58a70; --warn-bg:#33291a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 40px}
+.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
+header h1{font-family:var(--f-display);font-weight:800;font-size:1.4rem;margin:0}
+header span{font-size:.82rem;color:var(--muted)}
+header a{color:var(--accent);font-size:.88rem}
+nav{display:flex;gap:4px;border-bottom:2px solid var(--line);flex-wrap:wrap;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5}
+nav button{border:0;background:none;color:var(--muted);font:600 .95rem var(--f-body);padding:10px 12px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.panel h2{font-family:var(--f-display);font-weight:600;font-size:1.05rem;margin:0 0 8px}
+.panel h3{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:14px 0 6px;font-weight:600}
+.note{font-size:.85rem;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);font:600 .9rem var(--f-body);padding:9px 13px;border-radius:7px;cursor:pointer;min-height:40px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.file{position:relative;overflow:hidden;display:inline-flex;align-items:center}
+.file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.stage{position:relative;border:1px dashed var(--line);border-radius:8px;background:var(--sunk);min-height:160px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-top:10px}
+.stage canvas{display:block;max-width:100%;height:auto;touch-action:manipulation;cursor:crosshair}
+.stage .empty{color:var(--muted);font-size:.9rem;padding:20px;text-align:center}
+.pal{display:flex;flex-direction:column;gap:6px}
+.sw{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--sunk)}
+.sw .chip{width:40px;height:40px;border-radius:6px;border:1px solid var(--line)}
+.sw .meta{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);overflow-wrap:anywhere}
+.sw input[type=text]{width:100%;border:0;background:transparent;color:var(--ink);font:600 .92rem var(--f-body);padding:2px 0}
+.sw.base{border-color:var(--accent);background:var(--accent-soft)}
+.mini{display:flex;gap:4px;flex-wrap:wrap}
+.mini .c{width:30px;height:30px;border-radius:5px;border:1px solid var(--line)}
+.harm{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.hcard{border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--sunk);font-size:.84rem}
+.hcard b{display:block;margin-bottom:6px}
+.pill{display:inline-block;font-size:.72rem;font-weight:600;padding:1px 7px;border-radius:999px;border:1px solid currentColor}
+.ok{color:var(--ok)} .mid{color:var(--mid)} .bad{color:var(--bad)}
+.tbl{overflow-x:auto} table{border-collapse:collapse;width:100%;font-size:.85rem}
+th,td{padding:6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.pair{display:inline-flex;gap:3px;vertical-align:middle}.pair i{width:18px;height:18px;border-radius:4px;border:1px solid var(--line);display:inline-block}
+.out{background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:.92rem;margin-top:8px}
+.warn{background:var(--warn-bg);color:var(--mid);border-radius:7px;padding:8px 10px;font-size:.86rem;font-weight:500;margin-top:8px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.84rem;color:var(--muted)}
+label.f select{border:1px solid var(--line);border-radius:7px;background:var(--sunk);color:var(--ink);font:500 .95rem var(--f-body);padding:9px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.axis{display:grid;grid-template-columns:110px minmax(0,1fr) 46px;gap:8px;align-items:center;font-size:.85rem}
+.axis input{width:100%}
+.axis .v{font-family:var(--f-mono);text-align:right}
+.season{font-family:var(--f-display);font-size:1.6rem;font-weight:800;margin:4px 0}
+.prev{display:flex;gap:10px;flex-wrap:wrap}
+.prev canvas{border:1px solid var(--line);border-radius:6px;max-width:100%}
+.samples{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.samples div{display:flex;align-items:center;gap:6px;font-size:.82rem}
+.samples i{width:22px;height:22px;border-radius:5px;border:1px solid var(--line);display:inline-block}
+@media (max-width:640px){ body{font-size:16px} .btn{min-height:44px;flex:1 1 auto} .axis{grid-template-columns:90px minmax(0,1fr) 40px} }
+</style>
+
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ---------- SPALVŲ MATEMATIKA (sRGB D65, CIELAB, CIEDE2000, WCAG) ---------- */
+const s2l=c=>{c/=255; return c<=0.04045? c/12.92 : Math.pow((c+0.055)/1.055,2.4);};
+const l2s=c=>{ c=c<=0.0031308? 12.92*c : 1.055*Math.pow(c,1/2.4)-0.055; return Math.round(Math.min(1,Math.max(0,c))*255); };
+function lin2lab(r,g,b){
+  const X=(0.4124564*r+0.3575761*g+0.1804375*b)/0.95047, Y=(0.2126729*r+0.7151522*g+0.0721750*b), Z=(0.0193339*r+0.1191920*g+0.9503041*b)/1.08883;
+  const f=t=> t>216/24389 ? Math.cbrt(t) : (24389/27*t+16)/116;
+  const fx=f(X), fy=f(Y), fz=f(Z); return [116*fy-16, 500*(fx-fy), 200*(fy-fz)];
+}
+function lab2lin(L,a,b){
+  const fy=(L+16)/116, fx=fy+a/500, fz=fy-b/200;
+  const inv=t=>{ const t3=t*t*t; return t3>216/24389 ? t3 : (116*t-16)/(24389/27); };
+  const X=inv(fx)*0.95047, Y=inv(fy), Z=inv(fz)*1.08883;
+  return [3.2404542*X-1.5371385*Y-0.4985314*Z, -0.9692660*X+1.8760108*Y+0.0415560*Z, 0.0556434*X-0.2040259*Y+1.0572252*Z];
+}
+const rgb2lab=(R,G,B)=>lin2lab(s2l(R),s2l(G),s2l(B));
+function lab2rgb(L,a,b){ const [r,g,bb]=lab2lin(L,a,b); const oog=[r,g,bb].some(v=>v<-0.02||v>1.02); return {rgb:[l2s(r),l2s(g),l2s(bb)], oog}; }
+const hex=rgb=>'#'+rgb.map(v=>v.toString(16).padStart(2,'0')).join('');
+const hex2rgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const lch=lab=>{ const C=Math.hypot(lab[1],lab[2]); let h=Math.atan2(lab[2],lab[1])*180/Math.PI; if(h<0) h+=360; return [lab[0],C,h]; };
+const fromLch=(L,C,h)=>[L, C*Math.cos(h*Math.PI/180), C*Math.sin(h*Math.PI/180)];
+function de2000(l1,l2){
+  const [L1,a1,b1]=l1,[L2,a2,b2]=l2, rad=Math.PI/180;
+  const C1=Math.hypot(a1,b1), C2=Math.hypot(a2,b2), Cb=(C1+C2)/2, G=0.5*(1-Math.sqrt(Math.pow(Cb,7)/(Math.pow(Cb,7)+Math.pow(25,7))));
+  const a1p=(1+G)*a1, a2p=(1+G)*a2, C1p=Math.hypot(a1p,b1), C2p=Math.hypot(a2p,b2);
+  const h=(b,a)=>{ if(a===0&&b===0) return 0; let x=Math.atan2(b,a)/rad; return x<0?x+360:x; };
+  const h1p=h(b1,a1p), h2p=h(b2,a2p), dLp=L2-L1, dCp=C2p-C1p;
+  let dhp=0; if(C1p*C2p!==0){ dhp=h2p-h1p; if(dhp>180) dhp-=360; else if(dhp<-180) dhp+=360; }
+  const dHp=2*Math.sqrt(C1p*C2p)*Math.sin(dhp*rad/2), Lbp=(L1+L2)/2, Cbp=(C1p+C2p)/2;
+  let hbp=h1p+h2p; if(C1p*C2p!==0){ if(Math.abs(h1p-h2p)>180) hbp=(h1p+h2p+(h1p+h2p<360?360:-360))/2; else hbp=(h1p+h2p)/2; }
+  const T=1-0.17*Math.cos((hbp-30)*rad)+0.24*Math.cos(2*hbp*rad)+0.32*Math.cos((3*hbp+6)*rad)-0.20*Math.cos((4*hbp-63)*rad);
+  const dTh=30*Math.exp(-Math.pow((hbp-275)/25,2)), Rc=2*Math.sqrt(Math.pow(Cbp,7)/(Math.pow(Cbp,7)+Math.pow(25,7)));
+  const Sl=1+0.015*Math.pow(Lbp-50,2)/Math.sqrt(20+Math.pow(Lbp-50,2)), Sc=1+0.045*Cbp, Sh=1+0.015*Cbp*T, Rt=-Math.sin(2*dTh*rad)*Rc;
+  return Math.sqrt(Math.pow(dLp/Sl,2)+Math.pow(dCp/Sc,2)+Math.pow(dHp/Sh,2)+Rt*(dCp/Sc)*(dHp/Sh));
+}
+const relLum=rgb=>0.2126*s2l(rgb[0])+0.7152*s2l(rgb[1])+0.0722*s2l(rgb[2]);
+const wcag=(a,b)=>{ const x=relLum(a), y=relLum(b); return (Math.max(x,y)+0.05)/(Math.min(x,y)+0.05); };
+const clamp=(x,a=-1,b=1)=>Math.min(b,Math.max(a,x));
+
+/* ---------- SPALVŲ TEMPERATŪRA, ŠVIESUMAS, RYŠKUMAS (programos interpretacija) ---------- */
+function colorAxes(lab){ const [L,C,h]=lch(lab); return {t: Math.cos((h-70)*Math.PI/180)*Math.min(1,C/25), v: clamp((L-55)/25), c: clamp((C-35)/20)}; }
+/* 12 tipų: pagrindinė + antroji savybė (Sterling Style Academy). Tikslinės reikšmės – programos interpretacija:
+   t – šiltumas (+) / šaltumas (−), v – šviesumas (+) / tamsumas (−), c – ryškumas (+) / prislopinimas (−). */
+const SEASONS=[
+ {id:'LSp',n:'Šviesus pavasaris',d:['Šviesus','Šiltas'],t:.5,v:1,c:.3},
+ {id:'WSp',n:'Šiltas pavasaris',d:['Šiltas','Ryškus'],t:1,v:.3,c:.6},
+ {id:'BSp',n:'Ryškus pavasaris',d:['Ryškus','Šiltas'],t:.5,v:.2,c:1},
+ {id:'LSu',n:'Šviesi vasara',d:['Šviesus','Šaltas'],t:-.5,v:1,c:-.3},
+ {id:'CSu',n:'Šalta vasara',d:['Šaltas','Prislopintas'],t:-1,v:0,c:-.5},
+ {id:'SSu',n:'Prislopinta vasara',d:['Prislopintas','Šaltas'],t:-.5,v:0,c:-1},
+ {id:'SAu',n:'Prislopintas ruduo',d:['Prislopintas','Šiltas'],t:.5,v:0,c:-1},
+ {id:'WAu',n:'Šiltas ruduo',d:['Šiltas','Prislopintas'],t:1,v:-.3,c:-.4},
+ {id:'DAu',n:'Tamsus ruduo',d:['Tamsus','Šiltas'],t:.5,v:-1,c:-.1},
+ {id:'DWi',n:'Tamsi žiema',d:['Tamsus','Šaltas'],t:-.5,v:-1,c:.3},
+ {id:'CWi',n:'Šalta žiema',d:['Šaltas','Ryškus'],t:-1,v:-.3,c:.6},
+ {id:'BWi',n:'Ryški žiema',d:['Ryškus','Šaltas'],t:-.5,v:0,c:1}
+];
+const dist=(a,s)=>Math.hypot(a.t-s.t,a.v-s.v,a.c-s.c);
+function rankSeasons(ax){ return SEASONS.map(s=>({s, d:dist(ax,s)})).sort((a,b)=>a.d-b.d); }
+function yarnFit(lab, s){ const d=dist(colorAxes(lab), s); return d<0.9?'ok':(d<1.4?'mid':'bad'); }
+function seasonPalette(s){
+  const out=[]; const L=55+25*s.v, C=Math.max(8,35+20*s.c);
+  for(let h=0;h<360;h+=20){ const tc=Math.cos((h-70)*Math.PI/180); if(Math.sign(tc)!==Math.sign(s.t) && Math.abs(tc)>0.35) continue;
+    let cc=C, r; for(let k=0;k<6;k++){ r=lab2rgb(...fromLch(L,cc,h)); if(!r.oog) break; cc*=0.82; } out.push(hex(r.rgb)); }
+  const nh = s.t>0 ? 70 : 250; [L-25, L, L+20].forEach(l=>{ out.push(hex(lab2rgb(...fromLch(clamp(l,8,96),6,nh)).rgb)); });
+  return out;
+}
+
+/* ---------- BŪSENA ---------- */
+const KEY='srp-spalvos';
+function fresh(){ return {tab:'siulai', palette:[], base:0, wb:null, k:5, mode:'pick', pairA:0, pairB:1,
+  person:{wb:null, samples:{}, answers:{venos:'',papuosalai:'',saule:''}, override:null, mode:'oda', manual:null}}; }
+let S; try{ S=Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)||'{}')); if(!Array.isArray(S.palette)) S.palette=[]; if(!S.person||typeof S.person!=='object') S.person=fresh().person; }catch(e){ S=fresh(); }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=(x,d=1)=>{ const v=Math.round(x*Math.pow(10,d))/Math.pow(10,d); return (v===0?0:v).toLocaleString('lt-LT'); };
+let IMG={siulai:null, tipas:null};   // nuotraukos lieka tik atmintyje
+
+/* ---------- NUOTRAUKA ---------- */
+function loadImage(file, slot, cb){
+  const fr=new FileReader();
+  fr.onload=()=>{ const im=new Image(); im.onload=()=>{ IMG[slot]=im; cb(); }; im.src=fr.result; };
+  fr.readAsDataURL(file);
+}
+function drawStage(slot, canvasId, wb){
+  const cv=$(canvasId); if(!cv||!IMG[slot]) return;
+  const im=IMG[slot], max=900, sc=Math.min(1, max/Math.max(im.width,im.height));
+  cv.width=Math.round(im.width*sc); cv.height=Math.round(im.height*sc);
+  const ctx=cv.getContext('2d'); ctx.drawImage(im,0,0,cv.width,cv.height);
+  if(wb){ const d=ctx.getImageData(0,0,cv.width,cv.height), p=d.data;
+    for(let i=0;i<p.length;i+=4){ p[i]=l2s(s2l(p[i])*wb[0]); p[i+1]=l2s(s2l(p[i+1])*wb[1]); p[i+2]=l2s(s2l(p[i+2])*wb[2]); }
+    ctx.putImageData(d,0,0); }
+}
+function sampleAt(cv, ev){
+  const r=cv.getBoundingClientRect(), x=Math.round((ev.clientX-r.left)/r.width*cv.width), y=Math.round((ev.clientY-r.top)/r.height*cv.height);
+  const R=4, ctx=cv.getContext('2d'), d=ctx.getImageData(Math.max(0,x-R),Math.max(0,y-R),2*R+1,2*R+1).data;
+  let lr=0,lg=0,lb=0,n=0; for(let i=0;i<d.length;i+=4){ lr+=s2l(d[i]); lg+=s2l(d[i+1]); lb+=s2l(d[i+2]); n++; }
+  return [lr/n, lg/n, lb/n];   // linijinis RGB (jau su baltos pataisa, nes piešiama pataisyta)
+}
+function wbFrom(lin){ const m=(lin[0]+lin[1]+lin[2])/3; return lin.map(v=> v>0.001 ? m/v : 1); }
+function rawSample(slot, cv, ev){ // be baltos pataisos – baltam lapui
+  const im=IMG[slot], tmp=document.createElement('canvas'); tmp.width=cv.width; tmp.height=cv.height; tmp.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+  return sampleAt(tmp, ev);
+}
+
+/* ---------- K-VIDURKIAI ---------- */
+function kmeans(slot, k, wb){
+  const im=IMG[slot], max=110, sc=Math.min(1,max/Math.max(im.width,im.height));
+  const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(im.width*sc)); c.height=Math.max(1,Math.round(im.height*sc));
+  const ctx=c.getContext('2d'); ctx.drawImage(im,0,0,c.width,c.height); const p=ctx.getImageData(0,0,c.width,c.height).data;
+  const pts=[]; for(let i=0;i<p.length;i+=4){ let r=s2l(p[i]),g=s2l(p[i+1]),b=s2l(p[i+2]); if(wb){ r*=wb[0]; g*=wb[1]; b*=wb[2]; } pts.push(lin2lab(Math.min(1,r),Math.min(1,g),Math.min(1,b))); }
+  const d2=(a,b)=>(a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2;
+  const cents=[pts[Math.floor(pts.length/2)]];
+  while(cents.length<k){ let best=null,bd=-1; for(const q of pts){ const m=Math.min(...cents.map(c=>d2(q,c))); if(m>bd){bd=m;best=q;} } cents.push(best); }
+  let asg=new Array(pts.length).fill(0);
+  for(let it=0;it<15;it++){
+    pts.forEach((q,i)=>{ let bi=0,bd=Infinity; cents.forEach((c,j)=>{ const d=d2(q,c); if(d<bd){bd=d;bi=j;} }); asg[i]=bi; });
+    const sum=cents.map(()=>[0,0,0,0]); pts.forEach((q,i)=>{ const s=sum[asg[i]]; s[0]+=q[0]; s[1]+=q[1]; s[2]+=q[2]; s[3]++; });
+    sum.forEach((s,j)=>{ if(s[3]) cents[j]=[s[0]/s[3],s[1]/s[3],s[2]/s[3]]; });
+  }
+  const cnt=cents.map((_,j)=>asg.filter(a=>a===j).length);
+  return cents.map((c,j)=>({lab:c, share:cnt[j]/pts.length})).filter(x=>x.share>=0.03).sort((a,b)=>b.share-a.share);
+}
+
+/* ---------- PIEŠIMAS ---------- */
+function render(){
+  try{
+  $('#app').innerHTML=`<header><div><h1>Spalvų pagalbininkas</h1><span>Siūlų spalvų derinimas ir 12 spalvinių tipų</span></div><a href="../">← Mezgimo programa</a></header>
+   <nav>${[['siulai','Siūlų spalvos'],['tipas','Spalvinis tipas'],['apie','Kaip veikia']].map(([id,l])=>`<button data-tab="${id}" aria-selected="${S.tab===id}">${l}</button>`).join('')}</nav>
+   <main id="view"></main>`;
+  document.querySelectorAll('nav [data-tab]').forEach(b=>b.onclick=()=>{ S.tab=b.dataset.tab; save(); render(); });
+  ({siulai:viewYarn, tipas:viewPerson, apie:viewAbout})[S.tab] ? ({siulai:viewYarn, tipas:viewPerson, apie:viewAbout})[S.tab]() : viewYarn();
+  }catch(err){ $('#app').innerHTML=`<div class="panel"><h2>Klaida</h2><p class="note">${esc(err.message)}</p><button class="btn primary" id="rst">Atkurti programą</button></div>`; $('#rst').onclick=()=>{ try{localStorage.removeItem(KEY);}catch(e){} S=fresh(); render(); }; }
+}
+function swatchRow(c,i){
+  const [L,C,h]=lch(c.lab);
+  return `<div class="sw ${i===S.base?'base':''}"><div class="chip" style="background:${c.hex}"></div>
+    <div style="min-width:0"><input type="text" data-name="${i}" value="${esc(c.name||'')}" placeholder="Siūlų pavadinimas" aria-label="Pavadinimas"><div class="meta">${c.hex} · L ${fmt(L,0)} · C ${fmt(C,0)} · h ${fmt(h,0)}°</div></div>
+    <div class="row" style="gap:4px;flex-wrap:nowrap"><button class="btn" data-base="${i}" aria-pressed="${i===S.base}" title="Pagrindinė spalva">★</button><button class="btn" data-del="${i}" title="Pašalinti">✕</button></div></div>`;
+}
+function addColorLab(lab, name){ const r=lab2rgb(...lab).rgb; S.palette.push({lab, hex:hex(r), rgb:r, name:name||''}); }
+
+function viewYarn(){
+  const P=S.palette, base=P[S.base]||P[0];
+  let harm='';
+  if(base){
+    const [L,C,h]=lch(base.lab);
+    const defs=[['Papildoma',[180]],['Gretimos',[-30,30]],['Trijų spalvų',[120,240]],['Suskaidyta papildoma',[150,210]],['Monochrominė',[0]]];
+    harm=defs.map(([n,offs])=>{
+      const targets=offs.map(o=> n==='Monochrominė' ? [Math.min(95,L+22),C*0.8,h] : [L,C,(h+o+360)%360]);
+      const cells=targets.map(t=>{ const lab=fromLch(...t), th=hex(lab2rgb(...lab).rgb);
+        let best=null,bd=Infinity; P.forEach((c,i)=>{ if(c===base) return; const d=de2000(lab,c.lab); if(d<bd){bd=d;best=c;} });
+        const q = best ? (bd<10?['ok','labai artima']:bd<20?['mid','artima']:['bad','nėra']) : ['bad','nėra'];
+        return `<div class="row" style="gap:6px;margin:4px 0"><span class="mini"><span class="c" style="background:${th}" title="Idealus tonas ${th}"></span>${best?`<span class="c" style="background:${best.hex}" title="${esc(best.name||best.hex)}"></span>`:''}</span><span class="pill ${q[0]}">${q[1]}</span></div>`; }).join('');
+      return `<div class="hcard"><b>${n}</b>${cells}</div>`; }).join('');
+  }
+  let pairs='';
+  if(P.length>1){
+    const rows=[]; for(let i=0;i<P.length;i++) for(let j=i+1;j<P.length;j++){ const r=wcag(P[i].rgb,P[j].rgb), d=de2000(P[i].lab,P[j].lab), dl=Math.abs(P[i].lab[0]-P[j].lab[0]); rows.push({i,j,r,d,dl}); }
+    rows.sort((a,b)=>b.r-a.r);
+    pairs=`<div class="tbl"><table><thead><tr><th>Pora</th><th>Kontrastas</th><th>Šviesumo skirtumas</th><th>Raštui</th></tr></thead><tbody>${rows.map(x=>`<tr><td><span class="pair"><i style="background:${P[x.i].hex}"></i><i style="background:${P[x.j].hex}"></i></span></td><td class="n">${fmt(x.r,1)}:1</td><td class="n">${fmt(x.dl,0)}</td><td>${x.r>=3?'<span class="pill ok">aiškiai matomas</span>':x.r>=1.8?'<span class="pill mid">švelnus</span>':'<span class="pill bad">susilieja</span>'}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+  $('#view').innerHTML=`<div class="grid">
+   <section class="panel"><h2>1. Nufotografuokite siūlus</h2>
+     <p class="note" style="margin-top:0">Dienos šviesoje, be blykstės. Į kadrą įdėkite baltą popieriaus lapą – pagal jį pataisysime apšvietimo atspalvį.</p>
+     <div class="row"><label class="btn primary file">Fotografuoti / įkelti<input id="fileY" type="file" accept="image/*" capture="environment"></label>
+       <button class="btn" data-mode="white" aria-pressed="${S.mode==='white'}">Paspausti baltą lapą</button>
+       <button class="btn" data-mode="pick" aria-pressed="${S.mode==='pick'}">Paimti spalvą</button></div>
+     <div class="stage">${IMG.siulai?'<canvas id="cvY" aria-label="Siūlų nuotrauka"></canvas>':'<div class="empty">Čia atsiras nuotrauka. Paspauskite ant siūlų, kad paimtumėte spalvą.</div>'}</div>
+     <div class="row" style="margin-top:8px">${IMG.siulai?`<label class="f" style="flex-direction:row;align-items:center;gap:6px">Spalvų <select id="kSel">${[3,4,5,6,7,8].map(n=>`<option ${S.k===n?'selected':''}>${n}</option>`).join('')}</select></label><button class="btn" id="auto">Rasti spalvas automatiškai</button>`:''}
+       <label class="btn file">+ Spalva rankiniu būdu<input id="manual" type="color" value="#7a3e6b"></label></div>
+     <p class="note">${S.wb?'Balta pataisa pritaikyta.':'Balta pataisa nepritaikyta – spalvos gali būti pasislinkusios dėl apšvietimo.'}</p>
+   </section>
+   <section class="panel"><h2>2. Jūsų siūlų paletė (${P.length})</h2>
+     ${P.length?`<div class="pal">${P.map(swatchRow).join('')}</div><div class="row" style="margin-top:8px"><button class="btn" id="clr">Išvalyti paletę</button></div>`:'<p class="note">Paletė tuščia. Paimkite spalvas iš nuotraukos arba pridėkite rankiniu būdu.</p>'}
+   </section>
+   ${base?`<section class="panel"><h2>3. Kas tinka prie ★ spalvos</h2><p class="note" style="margin-top:0">Kairysis kvadratėlis – idealus tonas pagal spalvų ratą, dešinysis – artimiausi jūsų siūlai.</p><div class="harm">${harm}</div></section>`:''}
+   ${P.length>1?`<section class="panel"><h2>4. Ar raštas bus matomas</h2><p class="note" style="margin-top:0">Kontrastas pagal WCAG santykį (3:1 ir daugiau – aiškiai skiriasi). Fair isle raštui svarbu šviesumo skirtumas, ne tik atspalvis.</p>${pairs}
+     <h3>Rašto peržiūra</h3><div class="row"><label class="f">Fonas<select id="pA">${P.map((c,i)=>`<option value="${i}" ${i===S.pairA?'selected':''}>${esc(c.name||c.hex)}</option>`).join('')}</select></label><label class="f">Raštas<select id="pB">${P.map((c,i)=>`<option value="${i}" ${i===S.pairB?'selected':''}>${esc(c.name||c.hex)}</option>`).join('')}</select></label></div>
+     <div class="prev" style="margin-top:8px"><canvas id="fiC" width="240" height="120" aria-label="Rašto peržiūra spalvota"></canvas><canvas id="fiG" width="240" height="120" aria-label="Rašto peržiūra pilka"></canvas></div><p class="note">Dešinėje – kaip raštas atrodo nespalvotai. Jei ten susilieja, ir spalvotai raštas bus neryškus.</p></section>`:''}
+  </div>`;
+  const fy=$('#fileY'); fy.onchange=e=>{ const f=e.target.files[0]; if(f) loadImage(f,'siulai',()=>{ viewYarn(); }); };
+  document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{ S.mode=b.dataset.mode; save(); viewYarn(); });
+  if(IMG.siulai){ drawStage('siulai','#cvY',S.wb); const cv=$('#cvY');
+    cv.onclick=ev=>{ if(S.mode==='white'){ S.wb=wbFrom(rawSample('siulai',cv,ev)); S.mode='pick'; save(); viewYarn(); return; }
+      const lin=sampleAt(cv,ev); addColorLab(lin2lab(...lin.map(v=>Math.min(1,v)))); save(); viewYarn(); };
+    $('#kSel').onchange=e=>{ S.k=+e.target.value; save(); };
+    $('#auto').onclick=()=>{ kmeans('siulai',S.k,S.wb).forEach(x=>addColorLab(x.lab)); save(); viewYarn(); };
+  }
+  $('#manual').onchange=e=>{ const r=hex2rgb(e.target.value); addColorLab(rgb2lab(...r)); save(); viewYarn(); };
+  document.querySelectorAll('[data-name]').forEach(i=>i.onchange=()=>{ S.palette[+i.dataset.name].name=i.value; save(); });
+  document.querySelectorAll('[data-base]').forEach(b=>b.onclick=()=>{ S.base=+b.dataset.base; save(); viewYarn(); });
+  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{ S.palette.splice(+b.dataset.del,1); if(S.base>=S.palette.length) S.base=0; save(); viewYarn(); });
+  const clr=$('#clr'); if(clr) clr.onclick=()=>{ S.palette=[]; S.base=0; save(); viewYarn(); };
+  if(P.length>1){ const A=P[S.pairA]||P[0], B=P[S.pairB]||P[1]; drawFairIsle('#fiC',A.hex,B.hex,false); drawFairIsle('#fiG',A,B,true);
+    $('#pA').onchange=e=>{ S.pairA=+e.target.value; save(); viewYarn(); }; $('#pB').onchange=e=>{ S.pairB=+e.target.value; save(); viewYarn(); }; }
+}
+function drawFairIsle(id, A, B, gray){
+  const cv=$(id); if(!cv) return; const ctx=cv.getContext('2d'); if(!ctx) return; const cs=10;
+  const g=c=>{ const L=c.lab[0]; const v=hex(lab2rgb(L,0,0).rgb); return v; };
+  const ca=gray?g(A):A, cb=gray?g(B):B;
+  const motif=['000100010001000100010001','001110111011101110111011','011111111111111111111111','001110111011101110111011','000100010001000100010001','000000000000000000000000','010101010101010101010101','101010101010101010101010','000000000000000000000000','000100010001000100010001','001110111011101110111011','000100010001000100010001'];
+  motif.forEach((row,y)=>[...row].forEach((ch,x)=>{ ctx.fillStyle= ch==='1'?cb:ca; ctx.fillRect(x*cs,y*cs,cs,cs); }));
+}
+
+/* ---------- SPALVINIS TIPAS ---------- */
+function personAxes(){
+  const p=S.person, sm=p.samples, notes=[];
+  let tParts=[];
+  if(sm.oda){ const [L,C,h]=lch(sm.oda); tParts.push(clamp((h-55)/15)); notes.push(`odos atspalvio kampas ${fmt(h,0)}°`); }
+  const A=p.answers; if(A.venos) tParts.push({zalsvos:1,melsvos:-1,abejos:0}[A.venos]); if(A.papuosalai) tParts.push({auksas:1,sidabras:-1,abu:0}[A.papuosalai]); if(A.saule) tParts.push({idega:1,nudega:-1,abu:0}[A.saule]);
+  const t = tParts.length ? tParts.reduce((a,b)=>a+b,0)/tParts.length : 0;
+  const Ls=['oda','plaukai','akys'].filter(k=>sm[k]).map(k=>sm[k][0]);
+  const v = Ls.length ? clamp((Ls.reduce((a,b)=>a+b,0)/Ls.length-50)/25) : 0;
+  let cParts=[]; if(sm.akys) cParts.push(clamp((lch(sm.akys)[1]-15)/15)); if(sm.plaukai&&sm.oda) cParts.push(clamp((Math.abs(sm.plaukai[0]-sm.oda[0])-35)/25));
+  const c = cParts.length ? cParts.reduce((a,b)=>a+b,0)/cParts.length : 0;
+  const ax = p.manual || {t,v,c};
+  return {ax, auto:{t,v,c}, enough: !!(sm.oda && (sm.plaukai||sm.akys)) || tParts.length>=2};
+}
+function viewPerson(){
+  const p=S.person, sm=p.samples, {ax,auto,enough}=personAxes(), rank=rankSeasons(ax), top=p.override ? {s:SEASONS.find(s=>s.id===p.override), d:dist(ax,SEASONS.find(s=>s.id===p.override))} : rank[0];
+  const second = rank.find(r=>r.s.id!==top.s.id);
+  const q=(id,label,opts)=>`<label class="f">${label}<select data-q="${id}"><option value="">—</option>${opts.map(([v,t])=>`<option value="${v}" ${p.answers[id]===v?'selected':''}>${t}</option>`).join('')}</select></label>`;
+  const axisRow=(k,l,lo,hi)=>`<div class="axis"><span>${l}</span><input type="range" min="-1" max="1" step="0.05" value="${ax[k]}" data-ax="${k}" aria-label="${l}"><span class="v">${fmt(ax[k],2)}</span></div><div class="note" style="display:flex;justify-content:space-between;margin:-4px 0 6px 118px"><span>${lo}</span><span>${hi}</span></div>`;
+  const pal=seasonPalette(top.s);
+  const yarns=S.palette.map(c=>({c, f:yarnFit(c.lab, top.s)}));
+  $('#view').innerHTML=`<div class="grid">
+   <section class="panel"><h2>1. Veido nuotrauka</h2>
+     <p class="note" style="margin-top:0">Dienos šviesa prie lango, be makiažo, be blykstės. Šalia veido – baltas lapas. Nuotrauka lieka tik jūsų telefone.</p>
+     <div class="row"><label class="btn primary file">Fotografuoti / įkelti<input id="fileP" type="file" accept="image/*" capture="user"></label></div>
+     <div class="row" style="margin-top:8px">${[['white','Baltas lapas'],['oda','Oda (skruostas)'],['plaukai','Plaukai'],['akys','Akys (rainelė)']].map(([m,l])=>`<button class="btn" data-pm="${m}" aria-pressed="${p.mode===m}">${l}</button>`).join('')}</div>
+     <div class="stage">${IMG.tipas?'<canvas id="cvP" aria-label="Veido nuotrauka"></canvas>':'<div class="empty">Įkelkite nuotrauką, pasirinkite, ką žymite, ir paspauskite toje vietoje.</div>'}</div>
+     <div class="samples">${['oda','plaukai','akys'].map(k=>`<div><i style="background:${sm[k]?hex(lab2rgb(...sm[k]).rgb):'transparent'}"></i>${{oda:'Oda',plaukai:'Plaukai',akys:'Akys'}[k]}: ${sm[k]?'paimta':'—'}</div>`).join('')}<div>${p.wb?'Balta pataisa ✓':'Be baltos pataisos'}</div></div>
+     <h3>2. Keli klausimai</h3>
+     <div class="fields">${q('venos','Venos ant riešo atrodo',[['zalsvos','Žalsvos'],['melsvos','Melsvos ar violetinės'],['abejos','Sunku pasakyti']])}${q('papuosalai','Labiau tinka',[['auksas','Auksas'],['sidabras','Sidabras'],['abu','Abu vienodai']])}${q('saule','Saulėje oda',[['idega','Lengvai įdega'],['nudega','Greitai nudega'],['abu','Ir taip, ir taip']])}</div>
+   </section>
+   <section class="panel"><h2>3. Rezultatas</h2>
+     ${enough?'':'<div class="warn">Per mažai duomenų: pažymėkite odą ir plaukus arba akis, atsakykite į klausimus. Kol kas rezultatas apytikslis.</div>'}
+     <div class="season">${esc(top.s.n)}</div>
+     <div class="note">Pagrindinė savybė – <b>${top.s.d[0].toLowerCase()}</b>, antroji – <b>${top.s.d[1].toLowerCase()}</b>. ${second?`Artimiausias kitas tipas: ${esc(second.s.n)}.`:''}</div>
+     <h3>Jūsų savybės</h3>
+     ${axisRow('t','Temperatūra','šalta','šilta')}${axisRow('v','Šviesumas','tamsu','šviesu')}${axisRow('c','Ryškumas','prislopinta','ryšku')}
+     <div class="row"><button class="btn" id="axReset" ${p.manual?'':'disabled'}>Grąžinti matavimą</button>
+       <label class="f" style="flex-direction:row;align-items:center;gap:6px">Rodyti tipą <select id="ovr"><option value="">pagal matavimą</option>${SEASONS.map(s=>`<option value="${s.id}" ${p.override===s.id?'selected':''}>${s.n}</option>`).join('')}</select></label></div>
+     <h3>Tipui būdingos spalvos</h3><div class="mini">${pal.map(h=>`<span class="c" style="background:${h}" title="${h}"></span>`).join('')}</div>
+     <h3>Jūsų siūlai šiam tipui</h3>
+     ${yarns.length?`<div class="pal">${yarns.map(({c,f})=>`<div class="sw"><div class="chip" style="background:${c.hex}"></div><div><b style="font-size:.9rem">${esc(c.name||c.hex)}</b></div><span class="pill ${f}">${{ok:'tinka',mid:'galima',bad:'netinka'}[f]}</span></div>`).join('')}</div>`:'<p class="note">Pirmiausia sudarykite siūlų paletę skirtuke „Siūlų spalvos“.</p>'}
+     <p class="note">Tai rekomendacija, ne verdiktas: spalvinių tipų sistema yra stilistų metodas, o telefono kamera ir apšvietimas spalvas iškraipo.</p>
+   </section></div>`;
+  $('#fileP').onchange=e=>{ const f=e.target.files[0]; if(f) loadImage(f,'tipas',()=>viewPerson()); };
+  document.querySelectorAll('[data-pm]').forEach(b=>b.onclick=()=>{ p.mode=b.dataset.pm; save(); viewPerson(); });
+  if(IMG.tipas){ drawStage('tipas','#cvP',p.wb); const cv=$('#cvP');
+    cv.onclick=ev=>{ if(p.mode==='white'){ p.wb=wbFrom(rawSample('tipas',cv,ev)); p.mode='oda'; save(); viewPerson(); return; }
+      const lin=sampleAt(cv,ev); p.samples[p.mode]=lin2lab(...lin.map(v=>Math.min(1,v))); p.manual=null; p.mode={oda:'plaukai',plaukai:'akys',akys:'akys'}[p.mode]||p.mode; save(); viewPerson(); }; }
+  document.querySelectorAll('[data-q]').forEach(s=>s.onchange=()=>{ p.answers[s.dataset.q]=s.value; p.manual=null; save(); viewPerson(); });
+  document.querySelectorAll('[data-ax]').forEach(r=>r.onchange=()=>{ p.manual=Object.assign({}, ax, {[r.dataset.ax]:+r.value}); save(); viewPerson(); });
+  $('#axReset').onclick=()=>{ p.manual=null; save(); viewPerson(); };
+  $('#ovr').onchange=e=>{ p.override=e.target.value||null; save(); viewPerson(); };
+}
+function viewAbout(){
+  $('#view').innerHTML=`<div class="grid">
+   <section class="panel"><h2>Siūlų spalvos</h2><ul class="note" style="padding-left:18px;display:flex;flex-direction:column;gap:6px">
+     <li>Spalvos skaičiuojamos CIELAB erdvėje (sRGB, D65). Panašumas – CIEDE2000 formulė.</li>
+     <li>Balto lapo pataisa: pagal paspaustą baltą vietą suvienodinami raudonas, žalias ir mėlynas kanalai.</li>
+     <li>Automatinis spalvų radimas – k-vidurkių grupavimas; mažesnės nei 3 % nuotraukos spalvos atmetamos.</li>
+     <li>Harmonijos – pagal spalvų ratą (CIELAB atspalvio kampas): papildoma, gretimos, trijų spalvų, suskaidyta papildoma, monochrominė.</li>
+     <li>Kontrastas – WCAG šviesumo santykis.</li></ul></section>
+   <section class="panel"><h2>Spalvinis tipas</h2><ul class="note" style="padding-left:18px;display:flex;flex-direction:column;gap:6px">
+     <li>12 tipų – pagrindinė ir antroji savybė iš šešių: šviesus, tamsus, šiltas, šaltas, ryškus, prislopintas (Sterling Style Academy aprašymas).</li>
+     <li>Temperatūra – iš odos atspalvio ir atsakymų; šviesumas – iš odos, plaukų, akių šviesumo; ryškumas – iš akių ryškumo ir plaukų bei odos kontrasto.</li>
+     <li>Skaičių ribos ir tipų tikslinės reikšmės yra šios programos interpretacija, ne oficialus standartas. Juos galite pakoreguoti slankikliais.</li>
+     <li>Spalvinių tipų sistema – stilistų metodas, moksliškai nepatvirtintas; rezultatas – rekomendacija.</li></ul>
+     <p class="note">Nuotraukos niekur nesiunčiamos ir neišsaugomos – lieka tik atidarytame lange.</p></section></div>`;
+}
+render();
+</script>
+
+<script>
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{})); }
+</script>
+</body>
+</html>

@@ -128,7 +128,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
   .brand h1{font-size:1.25rem}
   header.top .seg{width:100%}
   header.top .seg button{flex:1}
-  nav.tabs button{padding:12px 12px;font-size:.92rem}
+  nav.tabs{flex-wrap:wrap;overflow:visible;gap:2px 4px}
+  nav.tabs button{padding:9px 9px;font-size:.88rem}
   .btn{padding:12px 14px;font-size:.95rem;min-height:44px}
   .row .btn{flex:1 1 auto}
   .seg button{padding:10px 12px;min-height:40px}
@@ -524,14 +525,23 @@ function group(items){
 function akys(n){ n=Math.abs(n)%100; const d=n%10; if(n>10&&n<20) return 'akių'; if(d===1) return 'akį'; if(d>=2&&d<=9) return 'akis'; return 'akių'; }
 function actText(e){
   switch(e.type){
-    case 'bind': return `uždarykite ${e.n} ${akys(e.n)} (kraštinę akį perkelkite ant gretimos adatos, tą adatą pastumkite į D, užmeskite siūlą ir grąžinkite į B; kartokite)`;
-    case 'dec': return `sumažinkite 1 akį: kraštinę akį perkėlimo įrankiu perkelkite ant gretimos adatos, tuščią adatą pastumkite į A padėtį (arba 2 dantų įrankiu perkelkite 2 kraštines akis viena adata į vidų – lygesnis kraštas)`;
-    case 'inc': return 'pridėkite 1 akį: krašte vieną adatą pastumkite iš A į B padėtį';
-    case 'cast': return `užmeskite ${e.n} ${akys(e.n)}: ${e.n} adatas pastumkite iš A į D ir laisvai apvyniokite siūlu (karietėlė dešinėje – prieš laikrodžio rodyklę, kairėje – pagal), kilpas pastumkite prie platinų`;
-    case 'hold': return `${e.n} ${e.n===1?'adatą':'adatas'} pastumkite į laikymo padėtį (HP, D) – jos nemegs; siūlą praveskite po pirma vidine D adata, kad neliktų skylės`;
+    case 'bind': return `uždarykite ${e.n} ${akys(e.n)}`;
+    case 'dec': return 'sumažinkite 1 akį';
+    case 'inc': return 'pridėkite 1 akį';
+    case 'cast': return `užmeskite ${e.n} ${akys(e.n)}`;
+    case 'hold': return `${e.n} ${e.n===1?'adatą':'adatas'} pastumkite į laikymo padėtį D`;
   }
   return '';
 }
+// Technika pagal SK280 instrukciją – rodoma vieną kartą arba „Mezgimo“ režime.
+const TECH = {
+  bind:'Uždarymas: kraštinę akį perkelkite ant gretimos adatos, tuščią adatą – į A; antrąją adatą pastumkite į D, užmeskite siūlą ir grąžinkite į B. Kartokite. Tik karietėlės pusėje.',
+  dec:'Sumažinimas 1 akies: kraštinę akį perkėlimo įrankiu perkelkite ant gretimos adatos, tuščią adatą pastumkite į A. Arba 2 dantų įrankiu perkelkite 2 kraštines akis viena adata į vidų (lygesnis kraštas).',
+  inc:'Pridėjimas 1 akies: karietėlės pusėje vieną adatą pastumkite iš A į B.',
+  cast:'Užmetimas: adatas pastumkite iš A į D ir laisvai apvyniokite siūlu (karietėlė dešinėje – prieš laikrodžio rodyklę, kairėje – pagal), kilpas pastumkite prie platinų. Tik karietėlės pusėje.',
+  hold:'Laikymo padėtis D: Russel svirtelės – I. Adatas stumkite pusėje, priešingoje karietėlei. Siūlą praveskite po pirma vidine D adata, kad neliktų skylės.'
+};
+function techText(t){ return TECH[t]||''; }
 function sideText(e){
   if(e.side==='abi') return e.first==='D'?'abiejuose kraštuose: pirma dešiniajame, po eilės – kairiajame':'abiejuose kraštuose: pirma kairiajame, po eilės – dešiniajame';
   return e.side==='D'?'dešiniajame krašte':'kairiajame krašte';
@@ -707,7 +717,14 @@ try{ const saved=JSON.parse(localStorage.getItem(KEY)||'{}'); S=Object.assign(fr
   if(S.machine==='LK150') S.machine='SK155'; if(S.gauges) delete S.gauges.LK150;
   (S.projects||[]).forEach(p=>{ if(p.machine==='LK150') p.machine='SK155'; });
   Object.keys(DEF_GAUGE).forEach(m=>{ S.gauges[m]=Object.assign(clone(DEF_GAUGE[m]), S.gauges[m]||{}); });
+  if(!MACHINES[S.machine]) S.machine='SK280';
+  if(!GARMENTS[S.garment]) { S.garment='megztinis'; S.piece='nugara'; }
+  if(!['meginys','konfig','iskarpos','masina','projektai','skaiciuokles','pagalba'].includes(S.tab)) S.tab='meginys';
+  if(!S.open || typeof S.open!=='object') S.open={};
+  if(!Array.isArray(S.projects)) S.projects=[];
+  if(!S.calc) S.calc=freshState().calc;
 }catch(e){ S=freshState(); }
+try{ if(location.hash==='#reset'){ localStorage.removeItem(KEY); S=freshState(); } }catch(e){}
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
 
 const $=s=>document.querySelector(s);
@@ -739,7 +756,8 @@ function ribAdvice(n, g, m){
   let ok, near;
   if(g.ribType==='1x1'){ ok=(n-1)%2===0; near=n%2===0? [n-1,n+1] : [n]; }
   else { ok=(n-2)%3===0; const k=Math.round((n-2)/3); near=[3*k+2]; if(3*k+2!==n) near=[3*(k)+2, 3*(k+1)+2].filter(v=>v>0); }
-  return ok ? ` Juostai ${g.ribType}: ${n} ak. tinka.` : ` Juostai ${g.ribType} pagrindinėje lovoje reikia ${g.ribType==='1x1'?'2n+1':'3n+2'} ak. – artimiausia: ${near.join(' arba ')}.`;
+  const beds = g.ribType==='1x1' ? ` 1×1 juostai: pagrindinėje lovoje ${ok?n:near[0]} adatų, antroje lovoje (ribber) – ${(ok?n:near[0])-1} adatų, kiekviena tarp pagrindinės lovos adatų.` : '';
+  return (ok ? ` Juostai ${g.ribType}: ${n} ak. tinka.` : ` Juostai ${g.ribType} pagrindinėje lovoje reikia ${g.ribType==='1x1'?'2n+1':'3n+2'} ak. – artimiausia: ${near.join(' arba ')}.`) + beds;
 }
 function computePiece(gk, pid, opts){
   const C=ctxOf(opts), P=C.params[gk], g=C.gauge, m=C.machine;
@@ -833,10 +851,11 @@ function fitCap(gk){
 
 /* ---------- PIEŠIMAS ---------- */
 function render(){
+  try{
   const m=MACHINES[S.machine], g=S.gauges[S.machine];
   $('#app').innerHTML = `
   <header class="top">
-    <div class="brand"><h1>Silver Reed pagalbininkas</h1><span>Iškarpos ir eilutės mezgimo mašinai · mėginys ${g.sts} ak. × ${g.rows} eil. / 10 cm</span></div>
+    <div class="brand"><h1>Silver Reed pagalbininkas</h1><span>Iškarpos ir eilutės mezgimo mašinai · mėginys ${g.sts} ak. × ${g.rows} eil. / 10 cm${standalone?' · <a href="spalvos/" style="color:var(--accent)">Spalvų pagalbininkas →</a>':''}</span></div>
     <div class="seg" role="group" aria-label="Mašina">
       ${Object.values(MACHINES).map(x=>`<button data-mach="${x.id}" aria-pressed="${S.machine===x.id}">${x.name}<small>${x.needles} adatų · ${x.kind}</small></button>`).join('')}
     </div>
@@ -848,6 +867,10 @@ function render(){
   document.querySelectorAll('[data-mach]').forEach(b=>b.onclick=()=>{S.machine=b.dataset.mach; save(); render();});
   document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab; save(); render();});
   ({pagalba:viewPagalba, konfig:viewKonfig, iskarpos:viewIskarpos, meginys:viewMeginys, skaiciuokles:viewCalc, projektai:viewProjects, masina:viewMasina})[S.tab]();
+  }catch(err){
+    $('#app').innerHTML=`<div class="panel" style="margin-top:20px"><h2>Programa susidūrė su klaida</h2><p class="note">Dažniausiai taip nutinka dėl senų išsaugotų duomenų. Paspauskite mygtuką – programa grįš į pradinę būseną (išsaugoti projektai bus ištrinti).</p><p class="note" style="font-family:var(--f-mono)">${esc(err&&err.message||err)}</p><button class="btn primary" id="hardReset">Atkurti programą</button></div>`;
+    const hr=document.getElementById('hardReset'); if(hr) hr.onclick=()=>{ try{ localStorage.removeItem(KEY); }catch(e){} S=freshState(); render(); };
+  }
 }
 function fieldHtml(f, p, ctx, prefix){
   if(f.g) return `<h3 class="full">${f.g}</h3>`;
@@ -934,6 +957,7 @@ function renderResults(){
   let card='';
   if(m.card){ const reps=sim.castOn.n/m.card; card=`<div class="stat"><b>${fmt(reps,1)}</b><span>perfokortos raštų (${m.card} ak.) per plotį</span></div>`; }
   const items = S.grouped ? sim.sections.map(s=>({...s, items:group(combine(s.items))})) : sim.sections.map(s=>({...s, items:combine(s.items)}));
+  const usedTypes=new Set(); sim.sections.forEach(s=>s.items.forEach(e=>{ if(e.type) usedTypes.add(e.type); }));
   $('#results').innerHTML=`${head}
     ${sim.warnings.map(w=>`<div class="warn" style="margin-bottom:8px">${esc(w)}</div>`).join('')}
     ${checks}
@@ -956,10 +980,9 @@ function renderResults(){
         </tbody></table></div>
         <div class="out" style="margin-top:10px"><b>Kaip skaityti:</b>
           <ul style="margin:6px 0 0;padding-left:18px">
-            <li><b>RC</b> – eilių skaitiklio skaičius ant karietėlės. Veiksmą atlikite, kai skaitiklis rodo tą skaičių, prieš mezgdami kitą eilę.</li>
-            <li><b>K ir D</b> – adatų numeriai į kairę ir į dešinę nuo adatų lovos vidurio (0). Pvz. K70–D70 – 140 adatų per vidurį.</li>
-            <li><b>Uždaryti</b> – akis nuimate visam laikui (kraštas tampa laiptelis). <b>Sumažinti</b> – akis perkeliate į vidų, kraštas lieka lygus.</li>
-            <li><b>HP</b> – laikymo padėtis${S.machine==='SK280'?' (SK280 – padėtis D)':''}: adatos lieka su akimis, bet nemezga. Traukite jas toje pusėje, kuri <i>priešinga</i> karietėlei, o paskutinę apvyniokite siūlu, kad neliktų skylutės. Svarelius kelkite aukštyn.</li>
+            <li><b>RC</b> – eilių skaitiklio skaičius. Veiksmą atlikite, kai skaitiklis rodo tą skaičių, prieš mezgdami kitą eilę.</li>
+            <li><b>K ir D</b> – adatų numeriai į kairę ir į dešinę nuo vidurio (0). K70–D70 – 140 adatų.</li>
+            ${['bind','dec','inc','cast','hold'].filter(t=>usedTypes.has(t)).map(t=>`<li>${esc(techText(t))}</li>`).join('')}
           </ul></div>
       </div>
     </div>`;
@@ -1076,7 +1099,7 @@ function viewPagalba(){
    <section class="panel"><h2>Žodynėlis</h2>
     <ul class="steps">
       <li><b>Užmesti</b> – sukurti naujas akis ant adatų.</li>
-      <li><b>Uždaryti</b> – nuimti akis visam laikui (laiptelis krašte). Kelios akys uždaromos tik karietėlės pusėje.</li>
+      <li><b>Uždaryti</b> – nuimti akis visam laikui (laiptelis krašte). ${esc(techText('bind'))}</li>
       <li><b>Sumažinti 1 akį</b> – kraštinę akį perkelti ant gretimos adatos, tuščią adatą pastumti į A. Galima abiejuose kraštuose toje pačioje eilėje.</li>
       <li><b>Pridėti</b> – įjungti naują adatą krašte (tik karietėlės pusėje).</li>
       <li><b>Dalinis mezgimas (trumposios eilės)</b> – dalis adatų laikoma D padėtyje ir nemezga. Taip formuojami pečiai, įsiuvės, apykaklės.</li>
@@ -1165,7 +1188,7 @@ function viewMasina(){
   const card = cur.note ? `<div class="meta">${esc(cur.sec)}</div><div class="act">${esc(cur.note)}</div>`
     : `<div class="meta">${esc(cur.sec)} · karietėlė ${cur.car==='D'?'dešinėje':'kairėje'}${cur.type==='hold'?' (adatas traukite priešingoje pusėje)':''}</div>
        <div class="rcbig">RC ${pad(cur.rc)}${cur.rc2!=null?` / ${pad(cur.rc2)}`:''}</div>
-       <div class="act">${esc(cap1(sideText(cur)))}: ${esc(actText(cur))}.</div><div class="meta">Po to dirba adatos ${cur.span}${cur.w!=null?` (${cur.w} ak.)`:''}</div>`;
+       <div class="act">${esc(cap1(sideText(cur)))}: ${esc(actText(cur))}.</div><div class="meta">Po to dirba adatos ${cur.span}${cur.w!=null?` (${cur.w} ak.)`:''}</div><div class="meta" style="font-size:.85rem">${esc(techText(cur.type))}</div>`;
   $('#view').innerHTML=`<div class="mach">
     <div class="row">
       <label class="f" for="m-p" style="min-width:240px;flex:1">Detalė<span class="in"><select id="m-p">${opts.map(([v,t])=>`<option value="${v}" ${S.mPiece===v?'selected':''}>${t}</option>`).join('')}</select></span></label>
@@ -1220,12 +1243,12 @@ const CYC = {
 const WHO = [['moteris','Moteris','moteris'],['vyras','Vyras','vyras'],['mergaite','Mergaitė','vaikas'],['berniukas','Berniukas','vaikas']];
 // CYC prigludimo kategorijos (laisvumas krūtinei). Imamas intervalo vidurys; „labai laisvas“ – 15+ cm, imama 17,5.
 const FITS = [['labai','Labai prigludęs (−5…−10 cm)',-7.5],['priglud','Prigludęs (0 cm)',0],['klasik','Klasikinis (+5…+10 cm)',7.5],['laisvas','Laisvas (+10…+15 cm)',12.5],['oversize','Labai laisvas (15+ cm)',17.5]];
-const CFG_GARMENTS = { moteris:['megztinis','kardiganas','suknele','svarkas'], vyras:['megztinis','kardiganas','svarkas'], mergaite:['megztinis','kardiganas','suknele'], berniukas:['megztinis','kardiganas'] };
+const CFG_GARMENTS = { moteris:['megztinis','kardiganas','suknele','svarkas','kelnes'], vyras:['megztinis','kardiganas','svarkas','kelnes'], mergaite:['megztinis','kardiganas','suknele','kelnes'], berniukas:['megztinis','kardiganas','kelnes'] };
 const mid = v=> Array.isArray(v) ? (v[0]+v[1])/2 : v;
 const r1 = x=> Math.round(x*10)/10;
 function defaultCfg(){ return {who:'moteris', size:'M', fit:'klasik', ease:7.5, garment:'megztinis', arm:'isiuta', shoulder:'japon',
   neckShape:'apvali', collar:'juosta', neckFront:7, neckBack:2, below:15, dressBelow:55, rib:5, neckW:0, cuffW:0,
-  breakDepth:28, overlap:3, btnN:2, collarW:7, jacketExtra:8}; }
+  breakDepth:28, overlap:3, btnN:2, collarW:7, jacketExtra:8, inseam:0, rise:0, legHem:0}; }
 
 // Iš konfigūracijos ir dydžio sukuria gaminio parametrus. Grąžina {params, body, notes}.
 function buildFromCfg(cfg, sizeName){
@@ -1241,6 +1264,7 @@ function buildFromCfg(cfg, sizeName){
   const armRemove = cfg.arm==='nuleista' ? 0 : r1(Math.max(1, bustW - body.cross)/2);
   const below = man ? 0 : Math.max(0,cfg.below);
   const toUnder = body.backWaist - body.armhole + below;
+  if(gk==='kelnes') return buildTrousers(cfg, body, i, T, kid, man, ease);
   const P = clone(DEF[gk]);
   Object.assign(P.nugara, { armType:cfg.arm, method:cfg.shoulder, bustW, hemW:bustW, waistW:bustW, hemToWaist:0,
     waistToUnderarm:r1(Math.max(5,toUnder-rib)), ribCm:rib, armRemove, armCurve:r1(Math.min(body.armhole*0.35, Math.max(2,armRemove*2))), ragCurveRem:0,
@@ -1272,6 +1296,25 @@ function buildFromCfg(cfg, sizeName){
   if(man) notes.push('Vyrų lentelėje „Back Waist Length“ reikšmės (pvz. S – 58,5–61 cm) atitinka ilgį iki klubų, todėl papildomas ilgis žemiau liemens nepridedamas.');
   return {gk, params:P, body, sizeIndex:i, sizeName:T.sizes[i], table:T.table, ease, notes};
 }
+// Kelnės: plotis iš CYC juosmens ir klubų + laisvumas; ilgius įveda naudotojas.
+// Prielaidos (pažymėtos programoje): priekis 47 %, nugara 53 % pusės klubų apimties; tarpkojo išsikišimas priekyje 4 %, nugaroje 8 % klubų apimties.
+function buildTrousers(cfg, body, i, T, kid, man, ease){
+  const P=clone(DEF.kelnes);
+  const inseam = cfg.inseam>0 ? cfg.inseam : (kid?r1(30+i*6):(man?80:76));
+  const rise = cfg.rise>0 ? cfg.rise : (kid?r1(16+i*1.2):(man?28:26));
+  const half=(body.hips+ease)/2, wHalf=(body.waist+ease)/2;
+  const rib=Math.max(0,cfg.rib);
+  const parts={priekis:{share:0.47, ext:0.04*body.hips, raise:0}, nugara:{share:0.53, ext:0.08*body.hips, raise: kid?2:3}};
+  for(const k of ['priekis','nugara']){
+    const s=parts[k], hipW=r1(half*s.share), ext=r1(s.ext), crotchW=r1(hipW+ext);
+    const hemW = cfg.legHem>0 ? r1(cfg.legHem/2) : r1(crotchW*0.6);
+    Object.assign(P[k],{ hipW, waistW:r1(wHalf*s.share), ext, crotchW, curveH:r1(rise*0.35), hipH:r1(rise*0.5), rise:r1(rise),
+      inseam:r1(Math.max(10,inseam-rib)), kneeH:r1(Math.max(5,(inseam-rib)*0.45)), kneeW:r1((hemW+crotchW)/2), hemW, ribCm:rib, waistband:kid?3:4, raise:s.raise });
+  }
+  const notes=['Kelnėms CYC lentelėse nėra kojos ilgio ir sėdynės aukščio – įveskite savo išmatuotus (pavyzdinės reikšmės pažymėtos).',
+    'Prielaidos: priekinė klešnė – 47 %, galinė – 53 % pusės klubų apimties; tarpkojo išsikišimas priekyje 4 %, nugaroje 8 % klubų; kelias – 45 % kojos ilgio; apačia – 60 % pločio ties tarpkoju, jei neįrašėte savo.'];
+  return {gk:'kelnes', params:P, body, sizeIndex:i, sizeName:T.sizes[i], table:T.table, ease, notes, trousers:{inseam, rise, given: cfg.inseam>0 && cfg.rise>0}};
+}
 function fitCapP(P){
   const sp=P.rankove, body=P.nugara;
   const b=bodyGeom(body,null,'megztinis'); const target=2*curveLen(b.base.side,b.Hu,b.armTop);
@@ -1293,7 +1336,12 @@ function viewKonfig(){
   const chips=(id,opts,val)=>`<div class="seg" role="group" data-chip="${id}">${opts.map(([v,t])=>`<button data-v="${v}" aria-pressed="${String(val)===String(v)}">${t}</button>`).join('')}</div>`;
   const garmentOpts=CFG_GARMENTS[c.who].map(g=>[g,GARMENTS[g].name]);
   const n=P.nugara;
-  const rows=[
+  const rows = B.gk==='kelnes' ? [
+    ['Liemuo', B.body.waist, `${fmt((P.priekis.waistW+P.nugara.waistW)*2)} (priekis ${fmt(P.priekis.waistW)}, nugara ${fmt(P.nugara.waistW)})`],
+    ['Klubai', B.body.hips, `${fmt((P.priekis.hipW+P.nugara.hipW)*2)} (priekis ${fmt(P.priekis.hipW)}, nugara ${fmt(P.nugara.hipW)})`],
+    ['Kojos ilgis iki tarpkojo', B.trousers.inseam, `${fmt(P.priekis.inseam)} + juosta ${fmt(P.priekis.ribCm)}`],
+    ['Sėdynės aukštis', B.trousers.rise, fmt(P.priekis.rise)]
+  ] : [
     ['Krūtinė', B.body.chest, `${fmt(n.bustW*2)} (detalė ${fmt(n.bustW)})`],
     ['Nugaros plotis tarp pečių', B.body.cross, `iškirptė ${fmt(n.neckW)} + 2 pečiai po ${fmt(n.bustW/2-n.armRemove-n.neckW/2)}`],
     ['Iškarpos gylis', B.body.armhole, fmt(n.armDepth)],
@@ -1310,6 +1358,12 @@ function viewKonfig(){
      <h3>Gaminys</h3>${chips('garment',garmentOpts,c.garment)}
      <h3>Prigludimas</h3>
      <div class="fields">${sel('fit','Kategorija',FITS.map(f=>[f[0],f[1]]),c.fit,true)}${num('ease','Laisvumas krūtinei','cm',c.ease,'Galite įrašyti savo')}</div>
+     ${B.gk==='kelnes' ? `<h3>Jūsų matmenys</h3><div class="fields">
+       ${num('inseam','Kojos ilgis iki tarpkojo','cm',c.inseam,'Vidinė siūlė: nuo tarpkojo iki apačios. 0 – pavyzdys')}
+       ${num('rise','Sėdynės aukštis','cm',c.rise,'Sėdint: nuo kėdės iki juosmens. 0 – pavyzdys')}
+       ${num('legHem','Klešnės apačios apimtis','cm',c.legHem,'0 – automatiškai')}
+       ${num('rib','Juostų aukštis','cm',c.rib)}
+     </div>${B.trousers.given?'':'<div class="warn" style="margin-top:8px">Kojos ilgis ir sėdynės aukštis dar neįvesti – naudojamos pavyzdinės reikšmės.</div>'}` : `
      <h3>Modelis</h3>
      <div class="fields">
        ${sel('arm','Rankovė',ARMTYPES,c.arm)}
@@ -1317,8 +1371,8 @@ function viewKonfig(){
        ${c.garment==='svarkas'?'':sel('neckShape','Iškirptė',NECKS,c.neckShape)}
        ${['kardiganas','svarkas'].includes(c.garment)?'':sel('collar','Kaklas',[['juosta','Mažas (juosta)'],['pusgolfis','Pusiau aukštas (pusgolfis)'],['golfas','Aukštas (golfas)']],c.collar)}
        ${c.garment==='svarkas'? num('btnN','Sagų skaičius','vnt.',c.btnN)+num('overlap','Užlaida sagoms','cm',c.overlap,'≈3 – viena sagų eilė, ≈7 – dvi') : ''}
-     </div>
-     <details class="grp" data-id="k/more" ${S.open['k/more']?'open':''}><summary>Matmenų patikslinimai</summary><div class="fields">
+     </div>`}
+     ${B.gk==='kelnes'?'':`<details class="grp" data-id="k/more" ${S.open['k/more']?'open':''}><summary>Matmenų patikslinimai</summary><div class="fields">
        ${c.garment==='svarkas'? num('breakDepth','Atlapo lūžis nuo peties','cm',c.breakDepth,'Iki viršutinės sagos')+num('collarW','Apykaklės plotis','cm',c.collarW)+num('jacketExtra','Švarkas ilgesnis per','cm',c.jacketExtra) : num('neckFront','Iškirptės gylis priekyje','cm',c.neckFront)}
        ${num('neckBack','Iškirptės gylis nugaroje','cm',c.neckBack)}
        ${num('neckW','Iškirptės plotis','cm',c.neckW,'0 – automatiškai')}
@@ -1326,7 +1380,7 @@ function viewKonfig(){
        ${man?'':num('below','Ilgis žemiau liemens','cm',c.below)}
        ${c.garment==='suknele'?num('dressBelow','Suknelės ilgis nuo liemens','cm',c.dressBelow):''}
        ${num('cuffW','Rankogalio plotis','cm',c.cuffW,'0 – automatiškai')}
-     </div></details>
+     </div></details>`}
      <div class="row" style="margin-top:14px">
        <button class="btn primary" id="kApply">Pritaikyti → 3. Detalės</button>
        <button class="btn" id="kAll">Išsaugoti visus dydžius</button>
@@ -1337,14 +1391,14 @@ function viewKonfig(){
      <div class="tblwrap"><table class="ins"><thead><tr><th>Matmuo</th><th>Kūnas (CYC)</th><th>Gaminys</th></tr></thead><tbody>
        ${rows.map(r=>`<tr><td>${r[0]}</td><td class="sp">${fmt(r[1])} cm</td><td class="sp">${r[2]} cm</td></tr>`).join('')}
      </tbody></table></div>
-     <div class="out">Laisvumas krūtinei: <b>${c.ease>0?'+':''}${fmt(c.ease)} cm</b>. Rankovės viršus suderintas su iškarpa${c.arm==='isiuta'?`: aukštis ${fmt(P.rankove.capH)} cm`:''}.</div>
+     <div class="out">${B.gk==='kelnes'?`Laisvumas klubams: <b>${c.ease>0?'+':''}${fmt(c.ease)} cm</b>.`:`Laisvumas krūtinei: <b>${c.ease>0?'+':''}${fmt(c.ease)} cm</b>. Rankovės viršus suderintas su iškarpa${c.arm==='isiuta'?`: aukštis ${fmt(P.rankove.capH)} cm`:''}.`}</div>
      <h3>Iš kur skaičiai</h3>
      <p class="note">Kūno matmenys – Craft Yarn Council ${esc(B.table.toLowerCase())} dydžių lentelė (intervalo vidurys). Laisvumas – tos pačios organizacijos prigludimo kategorijos.${kid?' Ši lentelė bendra berniukams ir mergaitėms.':''}</p>
      <h3>Prielaidos (pakeiskite, jei reikia)</h3>
      <ul class="note" style="margin:0;padding-left:18px">
-       <li>Iškirptės plotis = ⅓ nugaros pločio tarp pečių, jei neįrašėte savo.</li>
+       ${B.gk==='kelnes'?'':`<li>Iškirptės plotis = ⅓ nugaros pločio tarp pečių, jei neįrašėte savo.</li>
        <li>Iškarpos gylis = kūno iškarpos gylis; peties nuolydis ${kid?'1,5':'2,5'} cm; rankogalis = 60 % rankovės pločio, jei neįrašėte savo.</li>
-       <li>Rankovės plotis padidintas tiek pat procentų, kiek krūtinė.</li>
+       <li>Rankovės plotis padidintas tiek pat procentų, kiek krūtinė.</li>`}
        ${B.gk==='svarkas'?'<li>Švarkas: apačia pagal klubus + laisvumą, be juostų, rankogalis = 75 % rankovės pločio; atlapo lūžis, užlaida ir apykaklės plotis – jūsų pasirinkimas.</li>':''}
        ${B.notes.map(x=>`<li>${esc(x)}</li>`).join('')}
      </ul>
@@ -1354,7 +1408,7 @@ function viewKonfig(){
   document.querySelectorAll('#view select[data-k]').forEach(s=>s.onchange=()=>{ c[s.dataset.k]=s.value; if(s.dataset.k==='fit') c.ease=FITS.find(f=>f[0]===s.value)[2]; save(); viewKonfig(); });
   document.querySelectorAll('#view input[data-k]').forEach(inp=>inp.onchange=()=>{ c[inp.dataset.k]=parseFloat(String(inp.value).replace(',','.'))||0; save(); viewKonfig(); });
   $('#kApply').onclick=()=>{ const R=buildFromCfg(c,c.size); S.params[R.gk]=R.params; Object.keys(R.params).forEach(k=>S.edited[R.gk+'/'+k]=true);
-    S.garment=R.gk; S.piece='nugara'; S.tab='iskarpos'; save(); render(); };
+    S.garment=R.gk; S.piece=GARMENTS[R.gk].pieces[0].id; S.tab='iskarpos'; save(); render(); };
   $('#kAll').onclick=()=>{ const wn=WHO.find(w=>w[0]===c.who)[1];
     T.sizes.forEach(sz=>{ const R=buildFromCfg(c,sz); const name=`${GARMENTS[R.gk].name} · ${wn} ${sz}`;
       S.projects=S.projects.filter(p=>p.name!==name);
