@@ -721,7 +721,7 @@ try{ const saved=JSON.parse(localStorage.getItem(KEY)||'{}'); S=Object.assign(fr
   Object.keys(DEF_GAUGE).forEach(m=>{ S.gauges[m]=Object.assign(clone(DEF_GAUGE[m]), S.gauges[m]||{}); });
   if(!MACHINES[S.machine]) S.machine='SK280';
   if(!GARMENTS[S.garment]) { S.garment='megztinis'; S.piece='nugara'; }
-  if(!['meginys','konfig','iskarpos','masina','projektai','skaiciuokles','pagalba'].includes(S.tab)) S.tab='meginys';
+  if(!['meginys','konfig','iskarpos','masina','rastai','projektai','skaiciuokles','pagalba'].includes(S.tab)) S.tab='meginys';
   if(!S.open || typeof S.open!=='object') S.open={};
   if(!Array.isArray(S.projects)) S.projects=[];
   if(!S.calc) S.calc=freshState().calc;
@@ -864,12 +864,12 @@ function render(){
     </div>
   </header>
   <nav class="tabs" role="tablist">
-    ${[['meginys','1. Mėginys'],['konfig','2. Modelis'],['iskarpos','3. Detalės'],['masina','4. Mezgimas'],['projektai','Išsaugoti'],['skaiciuokles','Įrankiai'],['pagalba','Pagalba']].map(([id,l])=>`<button role="tab" data-tab="${id}" aria-selected="${S.tab===id}">${l}</button>`).join('')}
+    ${[['meginys','1. Mėginys'],['konfig','2. Modelis'],['iskarpos','3. Detalės'],['masina','4. Mezgimas'],['rastai','Raštai'],['projektai','Išsaugoti'],['skaiciuokles','Įrankiai'],['pagalba','Pagalba']].map(([id,l])=>`<button role="tab" data-tab="${id}" aria-selected="${S.tab===id}">${l}</button>`).join('')}
   </nav>
   <main id="view"></main>`;
   document.querySelectorAll('[data-mach]').forEach(b=>b.onclick=()=>{S.machine=b.dataset.mach; save(); render();});
   document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab; save(); render();});
-  ({pagalba:viewPagalba, konfig:viewKonfig, iskarpos:viewIskarpos, meginys:viewMeginys, skaiciuokles:viewCalc, projektai:viewProjects, masina:viewMasina})[S.tab]();
+  ({pagalba:viewPagalba, konfig:viewKonfig, iskarpos:viewIskarpos, meginys:viewMeginys, skaiciuokles:viewCalc, projektai:viewProjects, masina:viewMasina, rastai:viewRastai})[S.tab]();
   }catch(err){
     $('#app').innerHTML=`<div class="panel" style="margin-top:20px"><h2>Programa susidūrė su klaida</h2><p class="note">Dažniausiai taip nutinka dėl senų išsaugotų duomenų. Paspauskite mygtuką – programa grįš į pradinę būseną (išsaugoti projektai bus ištrinti).</p><p class="note" style="font-family:var(--f-mono)">${esc(err&&err.message||err)}</p><button class="btn primary" id="hardReset">Atkurti programą</button></div>`;
     const hr=document.getElementById('hardReset'); if(hr) hr.onclick=()=>{ try{ localStorage.removeItem(KEY); }catch(e){} S=freshState(); render(); };
@@ -1417,6 +1417,321 @@ function viewKonfig(){
       S.projects=S.projects.filter(p=>p.name!==name);
       S.projects.push({id:Date.now().toString(36)+sz, name, garment:R.gk, machine:S.machine, params:R.params, gauge:clone(S.gauges[S.machine])}); });
     S.garment=B.gk; save(); $('#kMsg').textContent=`Išsaugota ${T.sizes.length} dydžių. Palyginimas – skirtuke „Išsaugoti“.`; };
+}
+
+/* ================= RAŠTAI: nuotrauka → schema → korta → detalė; AI atpažinimas ================= */
+const PSYM=['','×','●','○','▲','◆','+','/','■','◇'];
+function patFresh(){ return {mode:'kartote', W:24, H:24, autoH:true, k:2, usePal:false, max2:true, cells:'0'.repeat(24*24),
+  colors:['#f4efe6','#1d5c78'], paint:1, sym:true, crop:[0,0,100,100], holesB:true, mirror:false, cardRows:0,
+  piece:'', startRow:1, bandRows:0}; }
+function patState(){
+  let p=S.pat; if(!p||typeof p!=='object') p=S.pat=patFresh();
+  const f=patFresh(); Object.keys(f).forEach(k=>{ if(p[k]==null) p[k]=f[k]; });
+  if(typeof p.cells!=='string'||p.cells.length!==p.W*p.H) p.cells='0'.repeat(p.W*p.H);
+  if(!Array.isArray(p.colors)||!p.colors.length) p.colors=f.colors.slice();
+  return p;
+}
+let patImg=null, patImgUrl='';
+/* --- spalvų matematika (sRGB → CIELAB, D65) --- */
+const pS2l=c=>{c/=255; return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);};
+function pRgb2lab(r,g,b){ const R=pS2l(r),G=pS2l(g),B=pS2l(b);
+  let x=(0.4124564*R+0.3575761*G+0.1804375*B)/0.95047, y=(0.2126729*R+0.7151522*G+0.0721750*B), z=(0.0193339*R+0.1191920*G+0.9503041*B)/1.08883;
+  const f=t=>t>216/24389?Math.cbrt(t):(24389/27*t+16)/116; x=f(x);y=f(y);z=f(z); return [116*y-16,500*(x-y),200*(y-z)]; }
+function pHex2rgb(h){ h=String(h).replace('#',''); if(h.length===3) h=h.split('').map(c=>c+c).join(''); const n=parseInt(h,16)||0; return [n>>16&255,n>>8&255,n&255]; }
+const pHex=(r,g,b)=>'#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');
+const pD=(a,b)=>(a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2;
+function mulberry(a){ return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function pKmeans(pts,k){ const rnd=mulberry(7); const C=[pts[Math.floor(rnd()*pts.length)].lab.slice()];
+  while(C.length<k){ const d=pts.map(p=>Math.min(...C.map(c=>pD(p.lab,c)))); const s=d.reduce((a,b)=>a+b,0); if(s===0) break; let r=rnd()*s,i=0; for(;i<d.length-1&&r>d[i];i++) r-=d[i]; C.push(pts[i].lab.slice()); }
+  for(let it=0;it<15;it++){ const acc=C.map(()=>[0,0,0,0,0,0,0]);
+    pts.forEach(p=>{ let bi=0,bd=Infinity; C.forEach((c,j)=>{ const d=pD(p.lab,c); if(d<bd){bd=d;bi=j;} }); p.k=bi; const a=acc[bi]; a[0]+=p.lab[0];a[1]+=p.lab[1];a[2]+=p.lab[2];a[3]+=p.rgb[0];a[4]+=p.rgb[1];a[5]+=p.rgb[2];a[6]++; });
+    acc.forEach((a,j)=>{ if(a[6]) { C[j]=[a[0]/a[6],a[1]/a[6],a[2]/a[6]]; C[j].rgb=[a[3]/a[6],a[4]/a[6],a[5]/a[6]]; C[j].n=a[6]; } }); }
+  return C; }
+function yarnPalette(){ try{ const s=JSON.parse(localStorage.getItem('srp-spalvos')||'{}'); return Array.isArray(s.palette)?s.palette.filter(c=>c&&c.hex):[]; }catch(e){ return []; } }
+
+/* --- nuotrauka → tinklelis --- */
+function patHeightAuto(p){ const g=S.gauges[S.machine]; if(!patImg) return p.H;
+  const c=p.crop, w=patImg.width*(c[2]-c[0])/100, h=patImg.height*(c[3]-c[1])/100;
+  return Math.max(1,Math.min(400,Math.round(p.W*(h/w)*(g.rows/g.sts)))); }
+function patConvert(){
+  const p=patState(); if(!patImg) return 'Pirmiausia įkelkite nuotrauką.';
+  const W=p.W, H=p.autoH?patHeightAuto(p):p.H; const sc=4, cw=W*sc, ch=H*sc;
+  const cv=document.createElement('canvas'); cv.width=cw; cv.height=ch; const ctx=cv.getContext('2d'); if(!ctx) return 'Naršyklė nepalaiko piešimo.';
+  const c=p.crop, sx=patImg.width*c[0]/100, sy=patImg.height*c[1]/100, sw=patImg.width*(c[2]-c[0])/100, sh=patImg.height*(c[3]-c[1])/100;
+  if(sw<2||sh<2) return 'Per mažas apkarpymas.';
+  ctx.imageSmoothingQuality='high'; ctx.drawImage(patImg,sx,sy,sw,sh,0,0,cw,ch);
+  const d=ctx.getImageData(0,0,cw,ch).data, all=[];
+  for(let o=0;o<d.length;o+=4){ const rgb=[d[o],d[o+1],d[o+2]]; all.push({rgb, lab:pRgb2lab(...rgb)}); }
+  // apmokome grupes ant atrankos, tada kiekvienam langeliui imame dažniausią jo taškų spalvą (ne vidurkį – kad spalvos nesusimaišytų)
+  const step=Math.max(1,Math.floor(all.length/20000)), train=all.filter((_,i)=>i%step===0);
+  const nearest=(lab,C)=>{ let bi=0,bd=Infinity; for(let j=0;j<C.length;j++){ const dd=pD(lab,C[j]); if(dd<bd){bd=dd;bi=j;} } return bi; };
+  let C=pKmeans(train,p.k); const lab2k=all.map(pt=>nearest(pt.lab,C));
+  const acc=C.map(()=>[0,0,0,0]); all.forEach((pt,i)=>{ const a=acc[lab2k[i]]; a[0]+=pt.rgb[0];a[1]+=pt.rgb[1];a[2]+=pt.rgb[2];a[3]++; });
+  const cellK=new Array(W*H);
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const cnt=new Array(C.length).fill(0); for(let j=0;j<sc;j++) for(let i=0;i<sc;i++) cnt[lab2k[(y*sc+j)*cw+x*sc+i]]++; let bi=0; cnt.forEach((v,q)=>{ if(v>cnt[bi]) bi=q; }); cellK[y*W+x]=bi; }
+  const used=C.map(()=>0); cellK.forEach(k=>used[k]++);
+  let order=C.map((c,j)=>j).filter(j=>used[j]>0).sort((a,b)=>used[b]-used[a]);
+  let colors, names=null; const re=[];
+  const yp=yarnPalette();
+  if(p.usePal && yp.length>=2){ const labs=yp.map(c=>c.lab||pRgb2lab(...pHex2rgb(c.hex))); const yi=order.map(j=>nearest(C[j],labs)); const uniq=[...new Set(yi)];
+    order.forEach((j,n)=>re[j]=uniq.indexOf(yi[n])); colors=uniq.map(i=>yp[i].hex); names=uniq.map(i=>yp[i].name||yp[i].hex); }
+  else { order.forEach((j,n)=>re[j]=n); colors=order.map(j=>{ const a=acc[j]; return a[3]?pHex(a[0]/a[3],a[1]/a[3],a[2]/a[3]):'#888888'; }); }
+  p.colorNames=names;
+  const cells=new Array(W*H);
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++) cells[(H-1-y)*W+x]=re[cellK[y*W+x]]; // eilė 0 – apačia
+  p.W=W; p.H=H; p.colors=colors; p.cells=cells.map(v=>String.fromCharCode(48+v)).join('');
+  if(p.max2) patLimit2(p);
+  p.paint=Math.min(1,colors.length-1); save(); return '';
+}
+function patGet(p,x,y){ return p.cells.charCodeAt(y*p.W+x)-48; }
+function patLimit2(p){ const labs=p.colors.map(h=>pRgb2lab(...pHex2rgb(h))); const a=p.cells.split('');
+  for(let y=0;y<p.H;y++){ const cnt={}; for(let x=0;x<p.W;x++){ const v=a[y*p.W+x]; cnt[v]=(cnt[v]||0)+1; }
+    const keep=Object.keys(cnt).sort((u,v)=>cnt[v]-cnt[u]).slice(0,2).map(c=>c.charCodeAt(0)-48);
+    for(let x=0;x<p.W;x++){ const v=a[y*p.W+x].charCodeAt(0)-48; if(keep.includes(v)) continue; let bi=keep[0],bd=Infinity; keep.forEach(q=>{const dd=pD(labs[v],labs[q]); if(dd<bd){bd=dd;bi=q;}}); a[y*p.W+x]=String.fromCharCode(48+bi); } }
+  p.cells=a.join(''); }
+function patResize(p,W,H){ const old=p, cells=[]; for(let y=0;y<H;y++) for(let x=0;x<W;x++) cells.push(x<old.W&&y<old.H?old.cells[y*old.W+x]:'0'); p.W=W; p.H=H; p.cells=cells.join(''); }
+
+/* --- analizė --- */
+function patRows(p){ const out=[]; for(let y=0;y<p.H;y++){ const cnt={}; for(let x=0;x<p.W;x++){ const v=patGet(p,x,y); cnt[v]=(cnt[v]||0)+1; }
+  const cs=Object.keys(cnt).map(Number).sort((a,b)=>cnt[b]-cnt[a]); out.push({cs, A:cs[0], B:cs.length>1?cs[1]:null}); } return out; }
+function patFloats(p){ // ilgiausias tempas: kiek akių iš eilės spalva nemezgama (kartotė kartojasi ratu)
+  let best={n:0,row:0}; const cyc=p.mode==='kartote';
+  for(let y=0;y<p.H;y++){ const cs=new Set(); for(let x=0;x<p.W;x++) cs.add(patGet(p,x,y)); if(cs.size<2) continue;
+    cs.forEach(c=>{ const L=cyc?p.W*2:p.W; let run=0; for(let i=0;i<L;i++){ const x=i%p.W; if(patGet(p,x,y)!==c){ run++; if(run>best.n && run<=p.W) best={n:run,row:y+1}; } else run=0; } }); }
+  return best; }
+function cardWidth(){ return MACHINES[S.machine].card; }
+function divisors(n){ const r=[]; for(let i=1;i<=n;i++) if(n%i===0) r.push(i); return r; }
+
+/* --- piešimas --- */
+function cellSize(p, box){ const g=S.gauges[S.machine]; const avail=Math.max(200,(box&&box.clientWidth||600)-44); const cw=Math.max(5,Math.min(26,Math.floor(avail/p.W))); return {cw, ch:Math.max(3,cw*g.sts/g.rows)}; }
+function drawChart(cv,p,opt){
+  const ctx=cv.getContext&&cv.getContext('2d'); if(!ctx) return;
+  const {cw,ch}=opt.size, mL=6, mB=22, mR=34, W=p.W, H=p.H;
+  cv.width=Math.ceil(mL+W*cw+mR); cv.height=Math.ceil(H*ch+mB+6);
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height);
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const v=patGet(p,x,y), X=mL+x*cw, Y=6+(H-1-y)*ch;
+    ctx.fillStyle=p.colors[v]||'#ccc'; ctx.fillRect(X,Y,cw,ch);
+    if(p.sym && v>0 && cw>=9){ const rgb=pHex2rgb(p.colors[v]); const L=pRgb2lab(...rgb)[0]; ctx.fillStyle=L>55?'#000':'#fff'; ctx.font=`${Math.floor(Math.min(cw,ch)*0.8)}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(PSYM[v]||String(v),X+cw/2,Y+ch/2+1); } }
+  ctx.strokeStyle='rgba(0,0,0,.22)'; ctx.lineWidth=1; ctx.beginPath();
+  if(cw>=6){ for(let x=0;x<=W;x++){ const X=Math.round(mL+x*cw)+.5; ctx.moveTo(X,6); ctx.lineTo(X,6+H*ch); } }
+  if(ch>=4){ for(let y=0;y<=H;y++){ const Y=Math.round(6+y*ch)+.5; ctx.moveTo(mL,Y); ctx.lineTo(mL+W*cw,Y); } }
+  ctx.stroke(); ctx.strokeStyle='rgba(0,0,0,.6)'; ctx.beginPath();
+  for(let x=0;x<=W;x+=10){ const X=Math.round(mL+(W-x)*cw)+.5; ctx.moveTo(X,6); ctx.lineTo(X,6+H*ch); }
+  for(let y=0;y<=H;y+=10){ const Y=Math.round(6+(H-y)*ch)+.5; ctx.moveTo(mL,Y); ctx.lineTo(mL+W*cw,Y); }
+  ctx.stroke(); ctx.strokeRect(mL+.5,6.5,W*cw,H*ch);
+  ctx.fillStyle='#333'; ctx.font='11px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
+  const stepR=ch>=10?5:10; for(let y=1;y<=H;y++) if(y===1||y%stepR===0) ctx.fillText(String(y),mL+W*cw+4,6+(H-y)*ch+ch/2);
+  ctx.textAlign='center'; ctx.textBaseline='top'; const stepC=cw>=12?5:10;
+  for(let x=1;x<=W;x++) if(x===1||x%stepC===0) ctx.fillText(String(x),mL+(W-x)*cw+cw/2,6+H*ch+5);
+  opt.geom={mL,top:6,cw,ch};
+}
+function drawCard(cv,p,rowsInfo){
+  const ctx=cv.getContext&&cv.getContext('2d'); if(!ctx) return null;
+  const CW=cardWidth(), reps=CW/p.W, Hc=cardLen(p), s=Math.max(8,Math.min(16,Math.floor(((cv.parentNode&&cv.parentNode.clientWidth)||420)-50)/CW));
+  const mL=26, mT=8; cv.width=mL+CW*s+30; cv.height=mT+Hc*s+10;
+  ctx.fillStyle='#fffdf6'; ctx.fillRect(0,0,cv.width,cv.height); ctx.strokeStyle='#bba'; ctx.strokeRect(mL-6.5,mT-4.5,CW*s+12,Hc*s+8);
+  let holes=0;
+  for(let r=0;r<Hc;r++){ const y=r%p.H, info=rowsInfo[y];
+    for(let c=0;c<CW;c++){ let x=c%p.W; if(p.mirror) x=p.W-1-x; const v=patGet(p,x,y); const hit=info.B==null?false:(p.holesB? v!==info.A : v===info.A);
+      const X=mL+c*s+s/2, Y=mT+(Hc-1-r)*s+s/2; ctx.beginPath(); ctx.arc(X,Y,s*0.32,0,7);
+      if(hit){ ctx.fillStyle='#222'; ctx.fill(); holes++; } else { ctx.strokeStyle='#d8d2c0'; ctx.stroke(); } }
+    if(r===0||(r+1)%5===0){ ctx.fillStyle='#555'; ctx.font='10px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.fillText(String(r+1),mL-9,mT+(Hc-1-r)*s+s/2); } }
+  return {holes, Hc, reps};
+}
+function cardLen(p){ if(p.cardRows>0) return p.cardRows; return p.H*Math.max(1,Math.ceil(40/p.H)); }
+function drawOnPiece(cv,p){
+  const ctx=cv.getContext&&cv.getContext('2d'); if(!ctx) return null;
+  const gk=S.garment, pcs=GARMENTS[gk].pieces.filter(x=>['body','front','cfront','sleeve','trousers'].includes(x.kind));
+  const pid=pcs.find(x=>x.id===p.piece)?p.piece:pcs[0].id; let r; try{ r=computePiece(gk,pid); }catch(e){ return null; }
+  const sim=r.sim, rows=[]; let minL=Infinity,maxR=-Infinity,maxY=0;
+  sim.parts.forEach(pt=>pt.rows.forEach(w=>{ if(w.yr==null||!(w.R>w.L)) return; rows.push(w); minL=Math.min(minL,w.L); maxR=Math.max(maxR,w.R); maxY=Math.max(maxY,w.yr); }));
+  if(!rows.length) return null;
+  const g=S.gauges[S.machine], Wn=maxR-minL, avail=Math.max(220,((cv.parentNode&&cv.parentNode.clientWidth)||420)-10);
+  let sx=avail/Wn, sy=sx*g.sts/g.rows; const maxH=520; if(maxY*sy>maxH){ sy=maxH/maxY; sx=sy*g.rows/g.sts; }
+  cv.width=Math.ceil(Wn*sx)+2; cv.height=Math.ceil(maxY*sy)+2; ctx.clearRect(0,0,cv.width,cv.height);
+  const off=Math.floor(p.W/2), y0=Math.max(1,p.startRow), y1=p.bandRows>0?y0+p.bandRows-1:Infinity;
+  rows.forEach(w=>{ const Y=cv.height-1-w.yr*sy;
+    for(let n=w.L;n<w.R;n++){ let col;
+      if(w.yr>=y0 && w.yr<=y1){ const xx=((n+off)%p.W+p.W)%p.W, yy=(w.yr-y0)%p.H; col=p.colors[patGet(p,xx,yy)]; } else col=p.colors[0];
+      ctx.fillStyle=col; ctx.fillRect(1+(n-minL)*sx,Y,Math.ceil(sx),Math.ceil(sy)); } });
+  return {pid, name:pieceDef(gk,pid).name, castOn:sim.castOn.n, maxW:Wn, rows:maxY, reps:Wn/p.W, pcs};
+}
+
+/* --- AI --- */
+const AI_KEY='srp-ai';
+function aiCfg(){ try{ return Object.assign({prov:'gemini', key:'', model:'', host:'http://localhost:11434'}, JSON.parse(localStorage.getItem(AI_KEY)||'{}')); }catch(e){ return {prov:'gemini',key:'',model:'',host:'http://localhost:11434'}; } }
+function aiSave(c){ try{ localStorage.setItem(AI_KEY, JSON.stringify(c)); }catch(e){} }
+const AI_DEF_MODEL={gemini:'gemini-2.5-flash', openrouter:'openrouter/free', ollama:'qwen2.5vl'};
+const AI_PROMPT=()=>`Tu – mašininio mezgimo specialistas. Nuotraukoje – megztas audinys arba rašto pavyzdys. Naudotojas mezga Silver Reed ${MACHINES[S.machine].full} mašina (${MACHINES[S.machine].card} akių perforuota korta${MACHINES[S.machine].ribber?', yra antra adatų lova SRP60N':''}).
+Nustatyk rašto tipą. Jei nesi tikras – taip ir parašyk, nespėliok. Atsakyk TIK JSON, lietuviškai:
+{"tipas":"vienas iš: žakardas (fair isle) | patiesinimas (tuck) | praleistos akys (slip) | ažūras | audimas (weaving) | kosos | intarsija | lygus | kita",
+"tikrumas":"didelis | vidutinis | mažas","aprasymas":"1–2 sakiniai, ką matai","spalvu_skaicius":skaičius,
+"daugiausia_spalvu_eileje":skaičius arba null,"galima_paversti_schema":true/false,
+"kaip_megzti":"trumpai: kokiu būdu tai daroma šia mašina (korta/rankinis atrinkimas/antra lova/perkėlimo įrankis), jei tai įmanoma",
+"pastabos":["kas lieka neaišku arba ką patikrinti mėginiu"]}`;
+async function imgToJpeg(img,max){ const s=Math.min(1,max/Math.max(img.width,img.height)); const c=document.createElement('canvas'); c.width=Math.round(img.width*s); c.height=Math.round(img.height*s); c.getContext('2d').drawImage(img,0,0,c.width,c.height); return c.toDataURL('image/jpeg',0.85); }
+async function aiAnalyze(){
+  const c=aiCfg(); if(!patImg) throw new Error('Pirmiausia įkelkite nuotrauką.');
+  if(c.prov!=='ollama' && !c.key) throw new Error('Įveskite AI raktą skiltyje „AI nustatymai“.');
+  const url=await imgToJpeg(patImg,1024), b64=url.split(',')[1], model=c.model||AI_DEF_MODEL[c.prov], prompt=AI_PROMPT();
+  let txt='';
+  if(c.prov==='gemini'){
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':c.key},
+      body:JSON.stringify({contents:[{parts:[{text:prompt},{inline_data:{mime_type:'image/jpeg',data:b64}}]}],generationConfig:{responseMimeType:'application/json',temperature:0.2}})});
+    const j=await r.json(); if(!r.ok) throw new Error((j.error&&j.error.message)||('Klaida '+r.status));
+    txt=(((j.candidates||[])[0]||{}).content||{parts:[]}).parts.map(x=>x.text||'').join('');
+  } else if(c.prov==='openrouter'){
+    const r=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+c.key},
+      body:JSON.stringify({model,temperature:0.2,messages:[{role:'user',content:[{type:'text',text:prompt},{type:'image_url',image_url:{url}}]}]})});
+    const j=await r.json(); if(!r.ok) throw new Error((j.error&&j.error.message)||('Klaida '+r.status));
+    txt=((j.choices||[])[0]||{message:{}}).message.content||''; if(Array.isArray(txt)) txt=txt.map(x=>x.text||'').join('');
+    if(j.model) c.lastModel=j.model;
+  } else {
+    const r=await fetch(c.host.replace(/\/$/,'')+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model,stream:false,format:'json',messages:[{role:'user',content:prompt,images:[b64]}]})});
+    const j=await r.json(); if(!r.ok) throw new Error(j.error||('Klaida '+r.status)); txt=(j.message||{}).content||'';
+  }
+  const m=txt.replace(/```json|```/g,'').match(/\{[\s\S]*\}/); if(!m) throw new Error('AI atsakymas nesuprantamas: '+txt.slice(0,200));
+  const res=JSON.parse(m[0]); res._model=c.lastModel||model; return res;
+}
+let aiResult=null, aiBusy=false, aiErr='';
+
+/* --- vaizdas --- */
+function viewRastai(){
+  const p=patState(), m=MACHINES[S.machine], g=S.gauges[S.machine], CW=m.card, yp=yarnPalette(), ai=aiCfg();
+  if(p.mode==='kartote' && CW%p.W!==0){ patResize(p,CW,p.H); save(); }
+  const rowsInfo=patRows(p), over2=rowsInfo.map((r,i)=>r.cs.length>2?i+1:0).filter(Boolean), fl=patFloats(p);
+  const cardOk=p.mode==='kartote' && CW%p.W===0 && !over2.length;
+  const groups=[]; rowsInfo.forEach((r,i)=>{ const key=r.A+'/'+r.B, last=groups[groups.length-1]; if(last&&last.key===key) last.to=i+1; else groups.push({key,A:r.A,B:r.B,from:i+1,to:i+1}); });
+  const cname=i=>p.colorNames&&p.colorNames[i]?esc(p.colorNames[i]):`spalva ${i+1}`;
+  const sw=i=>`<span style="display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;border:1px solid var(--line);background:${p.colors[i]}"></span>`;
+  const crop=p.crop;
+  $('#view').innerHTML=`
+  <div class="grid">
+   <section class="panel">
+     <h2>1. Rašto šaltinis</h2>
+     <p class="note" style="margin-top:0">Nufotografuokite raštą tiesiai iš priekio, gerame apšvietime. Spalvotą (žakardo) raštą programa paverčia schema. Reljefiniam raštui (patiesinimas, kosos, ažūras) skaičiuoklė netinka – jam naudokite AI atpažinimą.</p>
+     <div class="row"><label class="btn primary" style="display:inline-flex;align-items:center">Įkelti nuotrauką<input id="pFile" type="file" accept="image/*" hidden></label>
+       <button class="btn" id="pEmpty">Tuščias tinklelis</button></div>
+     ${patImg?`<div style="margin-top:10px;text-align:center"><div style="position:relative;display:inline-block;overflow:hidden;border-radius:6px;max-width:100%"><img src="${patImgUrl}" alt="Rašto nuotrauka" style="max-width:100%;max-height:300px;display:block"><div style="position:absolute;border:2px dashed #e33;box-shadow:0 0 0 9999px rgba(0,0,0,.35);left:${crop[0]}%;top:${crop[1]}%;width:${crop[2]-crop[0]}%;height:${crop[3]-crop[1]}%;pointer-events:none"></div></div></div>
+     <h3>Apkarpymas (kurią nuotraukos dalį imti)</h3>
+     <div class="fields">${[['Kairė',0],['Viršus',1],['Dešinė',2],['Apačia',3]].map(([l,i])=>`<label class="f">${l} <span class="in"><input type="range" min="0" max="100" step="1" data-crop="${i}" value="${crop[i]}" style="width:100%"></span></label>`).join('')}</div>
+     <div class="row" style="margin-top:10px"><button class="btn" id="aiGo">${aiBusy?'AI galvoja…':'🤖 AI: atpažinti raštą'}</button></div>`:''}
+     ${aiErr?`<div class="warn" style="margin-top:8px">${esc(aiErr)}</div>`:''}
+     ${aiResult?`<div class="panel" style="margin-top:10px;background:var(--sunk)"><b>AI pasiūlymas – patikrinkite mėginiu</b>
+       <p style="margin:6px 0"><b>${esc(aiResult.tipas||'?')}</b> · tikrumas: ${esc(aiResult.tikrumas||'?')}${aiResult.spalvu_skaicius?` · spalvų: ${esc(aiResult.spalvu_skaicius)}`:''}${aiResult.daugiausia_spalvu_eileje?` · eilėje iki ${esc(aiResult.daugiausia_spalvu_eileje)}`:''}</p>
+       <p class="note" style="margin:4px 0">${esc(aiResult.aprasymas||'')}</p>
+       ${aiResult.kaip_megzti?`<p style="margin:4px 0;font-size:.9rem"><b>Kaip megzti:</b> ${esc(aiResult.kaip_megzti)}</p>`:''}
+       ${(aiResult.pastabos||[]).length?`<ul class="note" style="margin:4px 0;padding-left:18px">${aiResult.pastabos.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+       <p class="note" style="margin:4px 0">Modelis: ${esc(aiResult._model||'')}</p>
+       ${aiResult.galima_paversti_schema?`<button class="btn primary" id="aiUse">Paversti schema (${Math.min(8,Math.max(2,+aiResult.spalvu_skaicius||2))} spalv.)</button>`:''}</div>`:''}
+     <details class="grp" ${S.open.ai?'open':''} data-id="ai"><summary>AI nustatymai</summary><div class="fields">
+       <label class="f full">Teikėjas<span class="in"><select id="aiProv">${[['gemini','Google Gemini (nemokamas planas)'],['openrouter','OpenRouter (nemokami modeliai, pvz. Qwen)'],['ollama','Ollama savo kompiuteryje']].map(([v,l])=>`<option value="${v}" ${ai.prov===v?'selected':''}>${l}</option>`).join('')}</select></span></label>
+       ${ai.prov!=='ollama'?`<label class="f full">API raktas<span class="in"><input id="aiKey" type="password" autocomplete="off" value="${esc(ai.key)}" placeholder="${ai.prov==='gemini'?'iš aistudio.google.com':'iš openrouter.ai/keys'}"></span><span class="hint">Raktas saugomas tik šiame įrenginyje. Siunčiama tik nuotrauka ir užklausa.</span></label>`
+         :`<label class="f full">Ollama adresas<span class="in"><input id="aiHost" value="${esc(ai.host)}"></span><span class="hint">Ollama turi leisti šią svetainę: nustatykite OLLAMA_ORIGINS=https://imgroupeu-lgtm.github.io ir paleiskite Ollama iš naujo.</span></label>`}
+       <label class="f full">Modelis<span class="in"><input id="aiModel" value="${esc(ai.model)}" placeholder="${AI_DEF_MODEL[ai.prov]}"></span><span class="hint">Palikite tuščią – bus naudojamas ${AI_DEF_MODEL[ai.prov]}.</span></label>
+       <p class="note full" style="margin:0">${ai.prov==='gemini'?'Nemokamo Gemini plano užklausas Google gali naudoti savo produktams tobulinti. Dienos ribos – jūsų AI Studio paskyroje.':ai.prov==='openrouter'?'„openrouter/free“ kaskart parenka atsitiktinį nemokamą modelį – kokybė gali svyruoti.':'Veikia tik kai kompiuteris įjungtas ir Ollama paleista.'}</p>
+     </div></details>
+
+     <h2 style="margin-top:16px">2. Schemos nustatymai</h2>
+     <div class="seg" role="group" style="margin-bottom:10px">${[['kartote',`Kartotė (korta ${CW} ak.)`],['laisvas','Laisvas motyvas']].map(([v,l])=>`<button data-pmode="${v}" aria-pressed="${p.mode===v}">${l}</button>`).join('')}</div>
+     <div class="fields">
+       ${p.mode==='kartote'?`<label class="f">Plotis<span class="in"><select id="pW">${divisors(CW).filter(v=>v>=2).map(v=>`<option ${p.W===v?'selected':''}>${v}</option>`).join('')}</select><span class="u">ak.</span></span><span class="hint">Turi dalytis iš ${CW}.</span></label>`
+        :`<label class="f">Plotis<span class="in"><input id="pW" type="number" inputmode="numeric" min="2" max="${m.needles}" value="${p.W}"><span class="u">ak.</span></span></label>`}
+       <label class="f">Aukštis<span class="in"><input id="pH" type="number" inputmode="numeric" min="1" max="400" value="${p.autoH&&patImg?patHeightAuto(p):p.H}" ${p.autoH&&patImg?'disabled':''}><span class="u">eil.</span></span>
+         <span class="hint"><label><input type="checkbox" id="pAutoH" ${p.autoH?'checked':''}> pagal nuotrauką ir mėginį</label></span></label>
+       <label class="f">Spalvų skaičius<span class="in"><input id="pK" type="number" inputmode="numeric" min="2" max="8" value="${p.k}"></span></label>
+       <label class="f">Spalvos<span class="in"><select id="pPal"><option value="0">pagal nuotrauką</option><option value="1" ${p.usePal?'selected':''} ${yp.length<2?'disabled':''}>mano siūlų paletė (${yp.length})</option></select></span>${yp.length<2?'<span class="hint">Paletę sudarykite „Spalvų pagalbininke“.</span>':''}</label>
+       <label class="f full"><span><input type="checkbox" id="pMax2" ${p.max2?'checked':''}> Ne daugiau kaip 2 spalvos eilutėje (būtina mezgant korta)</span></label>
+     </div>
+     <div class="row" style="margin-top:12px"><button class="btn primary" id="pConv" ${patImg?'':'disabled'}>Paversti schema →</button><span class="note" id="pMsg"></span></div>
+     <p class="note">Vienas langelis = viena akis. Langelio aukštis pagal mėginį (${g.sts} ak. × ${g.rows} eil. / 10 cm), todėl schema atrodo taip, kaip bus numegzta. Raštas: ${fmt(p.W*10/g.sts)} × ${fmt(p.H*10/g.rows)} cm.</p>
+   </section>
+
+   <section class="panel" id="pRes">
+     <div class="row" style="justify-content:space-between"><h2 style="margin:0">3. Schema ${p.W} ak. × ${p.H} eil.</h2>
+       <div class="row noprint"><button class="btn" id="pPrint">Spausdinti</button><a class="btn" id="pPng" download="rastas.png" href="#">PNG</a></div></div>
+     <p class="note">Skaitykite iš apačios: 1-oji eilė apačioje, akys numeruojamos iš dešinės. Bakstelėkite langelį – jis nusidažys pasirinkta spalva.</p>
+     <div class="row noprint" style="margin-bottom:8px">${p.colors.map((c,i)=>`<button class="btn" data-paint="${i}" aria-pressed="${p.paint===i}" style="${p.paint===i?'outline:3px solid var(--accent);':''}display:inline-flex;gap:6px;align-items:center">${sw(i)} ${PSYM[i]||''} ${cname(i)}</button><input type="color" data-recol="${i}" value="${p.colors[i]}" aria-label="Keisti spalvą ${i+1}" style="width:34px;height:34px;border:0;background:none">`).join('')}
+       ${p.colors.length<8?'<button class="btn" id="pAddC">+ spalva</button>':''}
+       <label class="note"><input type="checkbox" id="pSym" ${p.sym?'checked':''}> simboliai</label></div>
+     <div id="pChartBox" style="overflow:auto;max-width:100%"><canvas id="pChart" style="touch-action:none;display:block"></canvas></div>
+     <div class="stats" style="margin-top:10px">
+       <div class="stat"><b>${p.colors.length}</b><span>spalvų</span></div>
+       <div class="stat"><b>${fl.n}</b><span>ilgiausias tempas, ak. (${fmt(fl.n*10/g.sts)} cm, ${fl.row}-oji eil.)</span></div>
+       <div class="stat"><b>${over2.length}</b><span>eilių su >2 spalvom</span></div>
+     </div>
+     ${over2.length?`<div class="warn">Eilėse ${over2.slice(0,15).join(', ')}${over2.length>15?'…':''} yra daugiau nei 2 spalvos – korta tokių eilių numegzti negalima. Įjunkite „Ne daugiau kaip 2 spalvos eilutėje“ arba pataisykite rankiniu būdu.</div>`:''}
+     <p class="note">Tempas – kiek akių iš eilės siūlas eina išvirkščioje pusėje nemezgamas. Ar jis ne per ilgas jūsų siūlams, patikrinkite mėginiu.</p>
+     <h3>Spalvos pagal eiles</h3>
+     <table style="width:100%;border-collapse:collapse;font-size:.88rem">${groups.slice(0,60).map(gr=>`<tr style="border-top:1px solid var(--line)"><td style="padding:4px 6px;font-family:var(--f-mono)">${gr.from===gr.to?gr.from:gr.from+'–'+gr.to}</td><td style="padding:4px 6px">${sw(gr.A)} A: ${cname(gr.A)}</td><td style="padding:4px 6px">${gr.B!=null?sw(gr.B)+' B: '+cname(gr.B):'tik viena spalva'}</td></tr>`).join('')}</table>
+     <p class="note">A – pagrindinė (dažniausia) eilės spalva, B – antroji.</p>
+
+     <h2 style="margin-top:18px">4. Perforuota korta</h2>
+     ${p.mode!=='kartote'?`<p class="note">Laisvas motyvas kortai netinka – kortos plotis ${CW} ak. Naudokite schemą (rankinis adatų atrinkimas arba intarsija), arba perjunkite į „Kartotė“.</p>`
+      : !cardOk?`<div class="warn">Kortai reikia: plotis, kuris dalijasi iš ${CW}, ir ne daugiau 2 spalvų eilutėje.</div>`
+      :`<div class="row noprint" style="margin-bottom:6px">
+         <label class="note"><input type="checkbox" id="pHoles" ${p.holesB?'checked':''}> skylė = spalva B</label>
+         <label class="note"><input type="checkbox" id="pMirror" ${p.mirror?'checked':''}> veidrodžiu</label>
+         <label class="f" style="flex-direction:row;align-items:center;gap:6px">Kortos eilių <span class="in" style="width:90px"><input id="pCardR" type="number" min="${p.H}" step="${p.H}" value="${cardLen(p)}"></span></label></div>
+       <div style="overflow:auto"><canvas id="pCard"></canvas></div>
+       <p class="note" id="pCardInfo"></p>
+       <p class="note">Ar skylė mezga A ar B spalvą ir kaip korta sulygiuojama su adatomis, priklauso nuo mašinos nustatymo – patikrinkite ${m.name} instrukcijos Fair Isle skyriuje ir prieš pradurdami korta numegzkite mėginį. Mezgama išvirkščia puse į save, todėl nesimetriškas raštas gali išeiti veidrodžiu – tam yra „veidrodžiu“. Mažiausią kortos ilgį sujungimui žiedu patikrinkite instrukcijoje.</p>`}
+
+     <h2 style="margin-top:18px">5. Raštas ant detalės</h2>
+     <div class="fields">
+       <label class="f">Detalė (${esc(GARMENTS[S.garment].name)})<span class="in"><select id="pPiece">${GARMENTS[S.garment].pieces.filter(x=>['body','front','cfront','sleeve','trousers'].includes(x.kind)).map(x=>`<option value="${x.id}" ${p.piece===x.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select></span></label>
+       <label class="f">Pradėti nuo eilės<span class="in"><input id="pStart" type="number" inputmode="numeric" min="1" value="${p.startRow}"></span><span class="hint">po juosta</span></label>
+       <label class="f">Rašto juosta<span class="in"><input id="pBand" type="number" inputmode="numeric" min="0" value="${p.bandRows}"><span class="u">eil.</span></span><span class="hint">0 = iki galo</span></label>
+     </div>
+     <div style="margin-top:10px;overflow:hidden"><canvas id="pPieceCv" style="display:block;margin:0 auto;max-width:100%"></canvas></div>
+     <p class="note" id="pPieceInfo"></p>
+   </section>
+  </div>`;
+  // schema
+  const cv=$('#pChart'), box=$('#pChartBox'), opt={size:cellSize(p,box)}; drawChart(cv,p,opt);
+  try{ $('#pPng').href=cv.toDataURL('image/png'); }catch(e){}
+  if(cardOk){ const info=drawCard($('#pCard'),p,rowsInfo); if(info) $('#pCardInfo').textContent=`Korta ${CW} ak. × ${info.Hc} eil.: kartotė ${p.W} ak. telpa ${info.reps} kart. per plotį, ${info.Hc/p.H} kart. per ilgį. Skylių: ${info.holes}.`; }
+  const pi=drawOnPiece($('#pPieceCv'),p);
+  if(pi) $('#pPieceInfo').textContent=`${pi.name}: plačiausioje vietoje ${pi.maxW} ak. ≈ ${fmt(pi.reps)} kartotės. Kartotės vidurys sutampa su adatų lovos viduriu (0), todėl raštas abiejuose šonuose vienodas. Detalės matmenys – iš skirtuko „3. Detalės“.`;
+  // įvykiai
+  const rer=()=>{ save(); viewRastai(); };
+  $('#pFile').onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ const im=new Image(); im.onload=()=>{ patImg=im; patImgUrl=rd.result; aiResult=null; aiErr=''; p.crop=[0,0,100,100]; rer(); }; im.src=rd.result; }; rd.readAsDataURL(f); };
+  $('#pEmpty').onclick=()=>{ p.autoH=false; p.cells='0'.repeat(p.W*p.H); p.colors=p.colors.slice(0,Math.max(2,p.colors.length)); rer(); };
+  document.querySelectorAll('[data-crop]').forEach(i=>i.onchange=()=>{ const k=+i.dataset.crop, v=+i.value; const c=p.crop.slice(); c[k]=v; if(c[2]-c[0]<2||c[3]-c[1]<2) return viewRastai(); p.crop=c; rer(); });
+  document.querySelectorAll('[data-pmode]').forEach(b=>b.onclick=()=>{ p.mode=b.dataset.pmode; if(p.mode==='kartote' && CW%p.W!==0){ patResize(p,CW,p.H); } rer(); });
+  const pW=$('#pW'); pW.onchange=()=>{ let v=Math.max(2,Math.min(m.needles,parseInt(pW.value)||p.W)); if(p.autoH&&patImg){ p.W=v; patConvert(); } else patResize(p,v,p.H); rer(); };
+  const pH=$('#pH'); pH.onchange=()=>{ const v=Math.max(1,Math.min(400,parseInt(pH.value)||p.H)); patResize(p,p.W,v); rer(); };
+  $('#pAutoH').onchange=e=>{ p.autoH=e.target.checked; rer(); };
+  $('#pK').onchange=e=>{ p.k=Math.max(2,Math.min(8,parseInt(e.target.value)||2)); save(); };
+  $('#pPal').onchange=e=>{ p.usePal=e.target.value==='1'; save(); };
+  $('#pMax2').onchange=e=>{ p.max2=e.target.checked; if(p.max2) patLimit2(p); rer(); };
+  $('#pConv').onclick=()=>{ const msg=patConvert(); if(msg) $('#pMsg').textContent=msg; else viewRastai(); };
+  document.querySelectorAll('[data-paint]').forEach(b=>b.onclick=()=>{ p.paint=+b.dataset.paint; rer(); });
+  document.querySelectorAll('[data-recol]').forEach(i=>i.onchange=()=>{ p.colors[+i.dataset.recol]=i.value; if(p.colorNames) p.colorNames[+i.dataset.recol]=null; rer(); });
+  const add=$('#pAddC'); if(add) add.onclick=()=>{ p.colors.push('#c0392b'); p.paint=p.colors.length-1; rer(); };
+  $('#pSym').onchange=e=>{ p.sym=e.target.checked; rer(); };
+  $('#pPrint').onclick=()=>{ try{ window.print(); }catch(e){} };
+  let painting=false; const paintAt=ev=>{ const G=opt.geom; if(!G) return; const r=cv.getBoundingClientRect(), sx=cv.width/r.width, sy=cv.height/r.height;
+    const x=Math.floor(((ev.clientX-r.left)*sx-G.mL)/G.cw), yy=Math.floor(((ev.clientY-r.top)*sy-G.top)/G.ch); if(x<0||x>=p.W||yy<0||yy>=p.H) return;
+    const y=p.H-1-yy, i=y*p.W+x, ch=String.fromCharCode(48+p.paint); if(p.cells[i]===ch) return; p.cells=p.cells.slice(0,i)+ch+p.cells.slice(i+1); drawChart(cv,p,opt); };
+  cv.onpointerdown=ev=>{ painting=true; try{cv.setPointerCapture(ev.pointerId);}catch(e){} paintAt(ev); };
+  cv.onpointermove=ev=>{ if(painting) paintAt(ev); };
+  cv.onpointerup=cv.onpointercancel=()=>{ if(painting){ painting=false; rer(); } };
+  if($('#pHoles')){ $('#pHoles').onchange=e=>{ p.holesB=e.target.checked; rer(); }; $('#pMirror').onchange=e=>{ p.mirror=e.target.checked; rer(); };
+    $('#pCardR').onchange=e=>{ let v=parseInt(e.target.value)||0; v=Math.max(p.H,Math.round(v/p.H)*p.H); p.cardRows=v; rer(); }; }
+  $('#pPiece').onchange=e=>{ p.piece=e.target.value; rer(); };
+  $('#pStart').onchange=e=>{ p.startRow=Math.max(1,parseInt(e.target.value)||1); rer(); };
+  $('#pBand').onchange=e=>{ p.bandRows=Math.max(0,parseInt(e.target.value)||0); rer(); };
+  // AI
+  const det=document.querySelector('details[data-id="ai"]'); det.ontoggle=()=>{ S.open.ai=det.open; save(); };
+  $('#aiProv').onchange=e=>{ const c=aiCfg(); c.prov=e.target.value; c.model=''; c.key=''; aiSave(c); viewRastai(); };
+  const k=$('#aiKey'); if(k) k.onchange=()=>{ const c=aiCfg(); c.key=k.value.trim(); aiSave(c); };
+  const h=$('#aiHost'); if(h) h.onchange=()=>{ const c=aiCfg(); c.host=h.value.trim(); aiSave(c); };
+  $('#aiModel').onchange=e=>{ const c=aiCfg(); c.model=e.target.value.trim(); aiSave(c); };
+  const go=$('#aiGo'); if(go) go.onclick=async()=>{ if(aiBusy) return; aiBusy=true; aiErr=''; viewRastai();
+    try{ aiResult=await aiAnalyze(); }catch(e){ aiErr='AI nepavyko: '+(e&&e.message||e)+(aiCfg().prov==='ollama'?' (ar Ollama paleista ir leidžia šią svetainę?)':''); }
+    aiBusy=false; if(S.tab==='rastai') viewRastai(); };
+  const use=$('#aiUse'); if(use) use.onclick=()=>{ p.k=Math.min(8,Math.max(2,+aiResult.spalvu_skaicius||2)); const msg=patConvert(); if(msg) aiErr=msg; viewRastai(); };
 }
 
 render();
