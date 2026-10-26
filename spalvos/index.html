@@ -9,17 +9,29 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
-<title>Purla – spalvų pagalbininkė</title>
+<title>Toveli – spalvų pagalbininkė</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Fraunces is requested with text= (one font file, no unicode-range split): with Google's default subsets Chromium draws ū/ā/ē/ī/ė/ą/ę/į/ų with the diacritic shifted onto the next letter. -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;700&display=swap&text= (one font file, no unicode-range split): with Google's default subsets Chrome draws ū/ā/ē/ī with the macron shifted onto the next letter. -->
-<link rel=%E2%86%92%E2%80%A2%E2%80%B9%E2%80%BA%C2%BD">
-<!-- Fraunces has no Cyrillic: Lora (Cyrillic-capable serif) is used for :lang(ru) headings; with unicode-range the browser downloads only the files it actually renders. -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@500;700&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=DM+Mono:wght@500&display=swap">
 <style>
+/*FONTS*/
+/* Šriftai iš pačios programos (SIL OFL 1.1), be trečiųjų šalių. Atnaujinti: python3 fonts_build.py */
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:500;font-display:swap;src:url(../fonts/fraunces-500-latin.woff2) format('woff2');unicode-range:U+0020-007E,U+00A0-017F,U+0131,U+0152-0153,U+02C6-02DD,U+0300-036F,U+2013-2014,U+2018-201E,U+2022,U+2026,U+2030,U+2039-203A,U+20AC,U+2122,U+2190-2193,U+2212}
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:600;font-display:swap;src:url(../fonts/fraunces-600-latin.woff2) format('woff2');unicode-range:U+0020-007E,U+00A0-017F,U+0131,U+0152-0153,U+02C6-02DD,U+0300-036F,U+2013-2014,U+2018-201E,U+2022,U+2026,U+2030,U+2039-203A,U+20AC,U+2122,U+2190-2193,U+2212}
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:700;font-display:swap;src:url(../fonts/fraunces-700-latin.woff2) format('woff2');unicode-range:U+0020-007E,U+00A0-017F,U+0131,U+0152-0153,U+02C6-02DD,U+0300-036F,U+2013-2014,U+2018-201E,U+2022,U+2026,U+2030,U+2039-203A,U+20AC,U+2122,U+2190-2193,U+2212}
+@font-face{font-family:'Fraunces';font-style:italic;font-weight:500;font-display:swap;src:url(../fonts/fraunces-500i-latin.woff2) format('woff2');unicode-range:U+0020-007E,U+00A0-017F,U+0131,U+0152-0153,U+02C6-02DD,U+0300-036F,U+2013-2014,U+2018-201E,U+2022,U+2026,U+2030,U+2039-203A,U+20AC,U+2122,U+2190-2193,U+2212}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:400;font-display:swap;src:url(../fonts/nunito-400-latin.woff2) format('woff2');unicode-range:U+0020-007E,U+00A0-017F,U+0131,U+0152-0153,U+02C6-02DD,U+0300-036F,U+2013-2014,U+2018-201E,U+2022,U+2026,U+2030,U+2039-203A,U+20AC,U+2122,U+2190-2193,U+2212}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:400;font-display:swap;src:url(../fonts/nunito-400-cyr.woff2) format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:600;font-display:swap;src:url(../fonts/nunito-600-latin.woff2) format('woff2');unicode-range:U+0020-007E,U+00A0-017F,U+0131,U+0152-0153,U+02C6-02DD,U+0300-036F,U+2013-2014,U+2018-201E,U+2022,U+2026,U+2030,U+2039-203A,U+20AC,U+2122,U+2190-2193,U+2212}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:600;font-display:swap;src:url(../fonts/nunito-600-cyr.woff2) format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:700;font-display:swap;src:url(../fonts/nunito-700-latin.woff2) format('woff2');unicode-range:U+0020-007E,U+00A0-017F,U+0131,U+0152-0153,U+02C6-02DD,U+0300-036F,U+2013-2014,U+2018-201E,U+2022,U+2026,U+2030,U+2039-203A,U+20AC,U+2122,U+2190-2193,U+2212}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:700;font-display:swap;src:url(../fonts/nunito-700-cyr.woff2) format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:800;font-display:swap;src:url(../fonts/nunito-800-latin.woff2) format('woff2');unicode-range:U+0020-007E,U+00A0-017F,U+0131,U+0152-0153,U+02C6-02DD,U+0300-036F,U+2013-2014,U+2018-201E,U+2022,U+2026,U+2030,U+2039-203A,U+20AC,U+2122,U+2190-2193,U+2212}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:800;font-display:swap;src:url(../fonts/nunito-800-cyr.woff2) format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'DM Mono';font-style:normal;font-weight:500;font-display:swap;src:url(../fonts/dmmono-500-latin.woff2) format('woff2');unicode-range:U+0020-007E,U+00A0-017F,U+0131,U+0152-0153,U+02C6-02DD,U+0300-036F,U+2013-2014,U+2018-201E,U+2022,U+2026,U+2030,U+2039-203A,U+20AC,U+2122,U+2190-2193,U+2212}
+@font-face{font-family:'Lora';font-style:normal;font-weight:500;font-display:swap;src:url(../fonts/lora-500-latin.woff2) format('woff2');unicode-range:U+0020-007E,U+00A0-017F,U+0131,U+0152-0153,U+02C6-02DD,U+0300-036F,U+2013-2014,U+2018-201E,U+2022,U+2026,U+2030,U+2039-203A,U+20AC,U+2122,U+2190-2193,U+2212}
+@font-face{font-family:'Lora';font-style:normal;font-weight:500;font-display:swap;src:url(../fonts/lora-500-cyr.woff2) format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Lora';font-style:normal;font-weight:700;font-display:swap;src:url(../fonts/lora-700-latin.woff2) format('woff2');unicode-range:U+0020-007E,U+00A0-017F,U+0131,U+0152-0153,U+02C6-02DD,U+0300-036F,U+2013-2014,U+2018-201E,U+2022,U+2026,U+2030,U+2039-203A,U+20AC,U+2122,U+2190-2193,U+2212}
+@font-face{font-family:'Lora';font-style:normal;font-weight:700;font-display:swap;src:url(../fonts/lora-700-cyr.woff2) format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+/*/FONTS*/
 /* Išdėstymas: viena kolona telefonui, dvi – kompiuteriui; nuotrauka viršuje, paletė ir analizė po ja */
 :root{
   --bg:#f1efec; --surface:#ffffff; --sunk:#f7f6f4; --ink:#1f2224; --muted:#62676b; --line:#d8d4cf;
@@ -1918,8 +1930,8 @@ function i18nApply(root){
   const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode:n=>{ const p=n.parentNode; if(!p) return NodeFilter.FILTER_REJECT; const tg=p.nodeName; return (tg==='SCRIPT'||tg==='STYLE'||tg==='TEXTAREA')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT; }});
   const list=[]; while(w.nextNode()) list.push(w.currentNode);
   list.forEach(n=>{ if(n.__tr===n.nodeValue) return; const v=i18nTr(n.nodeValue); if(v!==n.nodeValue){ n.nodeValue=v; } n.__tr=n.nodeValue; });
-  const els=root.querySelectorAll ? root.querySelectorAll('[placeholder],[title],[aria-label]') : [];
-  els.forEach(el=>['placeholder','title','aria-label'].forEach(a=>{ const v=el.getAttribute(a); if(v){ const t=i18nTr(v); if(t!==v) el.setAttribute(a,t); } }));
+  const els=root.querySelectorAll ? root.querySelectorAll('[placeholder],[title],[aria-label],optgroup[label]') : [];
+  els.forEach(el=>['placeholder','title','aria-label','label'].forEach(a=>{ if(a==='label'&&el.nodeName!=='OPTGROUP') return; const v=el.getAttribute(a); if(v){ const t=i18nTr(v); if(t!==v) el.setAttribute(a,t); } }));
 }
 let i18nObs=null, i18nBusy=false;
 function i18nStart(){

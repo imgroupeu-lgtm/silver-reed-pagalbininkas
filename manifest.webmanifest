@@ -1,7 +1,7 @@
 {
-  "name": "Purla – mezgimo pagalbininkė",
-  "short_name": "Purla",
-  "description": "Iškarpos, eilutės, raštai ir siūlų planavimas mezgimo mašinoms ir rankiniam mezgimui",
+  "name": "Toveli – mezgimo ir nėrimo pagalbininkė",
+  "short_name": "Toveli",
+  "description": "Iškarpos, eilutės, raštai ir siūlų planavimas mezgimo mašinoms, rankiniam mezgimui ir nėrimui",
   "lang": "lt",
   "start_url": "./",
   "scope": "./",
