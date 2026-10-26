@@ -1,36 +1,20 @@
-# Silver Reed pagalbininkas
+# Purla – mezgimo pagalbininkė
 
-Iškarpų ir eilučių skaičiuoklė Silver Reed **SK280** (200 adatų, 4,5 mm) ir **SK155** (110 adatų, 9 mm) mezgimo mašinoms. Veikia telefone ir kompiuteryje, įdiegta – ir be interneto.
+Mezgimo pagalbininkė mezgimo mašinoms (Silver Reed, Brother – 23 modeliai) ir rankiniam mezgimui. Veikia telefone, planšetėje ir kompiuteryje, įdiegta – ir be interneto. 11 kalbų.
 
-## Ką moka (3 versija)
+- Programa: https://imgroupeu-lgtm.github.io/silver-reed-pagalbininkas/
+- Spalvų programa: https://imgroupeu-lgtm.github.io/silver-reed-pagalbininkas/spalvos/
+- Svetainė: https://imgroupeu-lgtm.github.io/silver-reed-pagalbininkas/landing/
 
-- **Iškarpos**: megztinis, kardiganas, suknelė, kelnės. Rankovės: įsiūta (varpo formos viršus), reglanas, nuleistas petys. Iškirptė apvali arba V.
-- **Pečiai**: japoniškas (trumposios eilės, sujungimas be siūlės), paprastas (laiptuotas uždarymas), tiesus. Nugaros ir priekio pečio akys visada sutampa.
-- **Trumposios eilės**: krūtinės įsiuvės, kelnių nugaros pakėlimas.
-- **Apykaklės**: juosta, pusgolfis, golfas (viengubas ar dvigubas); kardiganui – sagų juostos su skylučių vietomis.
-- **Konfigūratorius**: moteris, vyras, mergaitė, berniukas; Craft Yarn Council dydžiai; 5 prigludimo lygiai; visi dydžiai vienu mygtuku.
-- **Švarkas**: atlapai, šalikinė apykaklė, užlaida, sagos, kišenės.
-- **Anatominis reglanas**: linija iš 3 dalių (uždarymas, statesnė dalis, švelnesnė dalis).
-- **Pagal SK280 instrukciją**: adatų padėtys A–D, Russel svirtelės, dalinis mezgimas, mėginio metodas, uždarymas, sagų skylutės, pečių sujungimas ant mašinos.
-- **Projektai ir dydžiai**: išsaugokite kelis dydžius ir palyginkite.
-- **Eilutė po eilutės** pagal eilių skaitiklį (RC): kur, kada ir kiek uždaryti, mažinti, didinti ar perkelti į laikymo padėtį (HP). Uždarymai planuojami karietėlės pusėje, laikymo padėtis – priešingoje.
-- **Rankovės viršaus patikra**: lygina rankovės viršaus kraštą su iškarpos ilgiu ir gali suderinti aukštį automatiškai.
-- **Mėginys** kiekvienai mašinai atskirai, siūlų kiekio įvertis pagal mėginio svorį.
-- **Skaičiuoklės**: cm į akis/eiles, tolygus mažinimas, peties trumposios eilės.
-- **Prie mašinos** režimas: dideli žingsniai, „Atlikta“ mygtukas, ekranas neužgęsta.
+## Ką moka
+- Gaminių detalės pagal savus išmatavimus ir mėginį (20+ gaminių), japoniškas petys, anatominis reglanas, krūtinės įsiūvė.
+- Mašinų instrukcijos su adatų numeriais, mezgimo režimas ir skaitmeninis „Knit Radar“ (bakstelėjimas arba Bluetooth pedalas).
+- Rankinis mezgimas eilė po eilės.
+- ~250 raštų (spalvoti, reljefiniai, ažūrai, japoniški), rašto redaktorius, perfokortos, intarsija, dvigubas žakardas, PDF / SVG eksportas.
+- Siūlų kiekis, siūlų sandėlis, mėginių biblioteka, spalvų programa, maketas iš siūlų nuotraukos.
 
-Raštai (perfokortos SK280) – kitoje versijoje.
-
-## Kaip įkelti į GitHub Pages
-
-1. GitHub'e sukurkite naują viešą repozitoriją, pvz. `silver-reed-pagalbininkas`.
-2. Įkelkite visus šio aplanko failus į repozitorijos šaknį (Add file → Upload files).
-3. Settings → Pages → Source: „Deploy from a branch“, Branch: `main`, aplankas `/ (root)` → Save.
-4. Po minutės programa bus adresu `https://<jūsų-vardas>.github.io/silver-reed-pagalbininkas/`.
-
-## Kaip įdiegti
-
-- **Android**: atidarykite adresą Chrome naršyklėje → meniu ⋮ → „Įdiegti programą“ (arba „Pridėti prie pagrindinio ekrano“).
-- **Kompiuteris**: Chrome arba Edge adreso juostoje spauskite įdiegimo ženkliuką → „Įdiegti“.
-
-Duomenys (matmenys, mėginiai) saugomi tik tame įrenginyje.
+## Failų struktūra
+- `index.html`, `sw.js`, `manifest.webmanifest`, piktogramos – programa
+- `i18n/` – kalbų žodynai (kraunami pasirinkus kalbą)
+- `spalvos/` – spalvų programa
+- `landing/` – reklaminė svetainė
