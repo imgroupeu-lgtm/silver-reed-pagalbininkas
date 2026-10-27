@@ -9,6 +9,10 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>body{margin:0}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="noindex, nofollow">
 <title>Toveli – mezgimo mašinos pagalbininkė</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
@@ -394,6 +398,31 @@ div.f{display:flex;flex-direction:column;gap:4px;font-size:.84rem;color:var(--mu
   .bs-item small{display:block;font-weight:400;font-size:.8rem;color:var(--muted)}
   .wz{padding-bottom:24px}
 }
+/* Raštai telefone: eksporto mygtukai – kompaktiškai (ne per visą plotį), kad schema būtų arčiau */
+@media (max-width:640px){#pRes .pexp .btn{flex:0 1 auto;padding:10px 12px}}
+/* ===== Antraštė kompiuteryje: viena eilė nuo 1024 px (prekės ženklas · režimai · spalvos · kalba · planas); mašinos kortelė – antroje eilėje ===== */
+@media (min-width:641px){
+  header.top{flex-wrap:wrap;justify-content:flex-start;gap:10px 12px}
+  header.top .brand{flex:1 1 150px;min-width:0;max-width:100%}
+  header.top .brand h1{white-space:nowrap}
+  header.top .brand span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  header.top .modebar{flex:0 0 auto}
+  header.top .appswitch{flex:0 0 auto;gap:8px;padding:8px 14px;font-size:.9rem;white-space:nowrap}
+  header.top .appswitch .aw-long{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  header.top .appswitch .aw-short{display:inline}
+  header.top .langsel,header.top .licbadge{flex:0 0 auto;white-space:nowrap}
+  header.top .machsel{flex:1 0 100%;justify-content:flex-end;min-width:0}
+  header.top .machbtn{max-width:100%;min-width:0}
+}
+@media (min-width:641px) and (max-width:1023px){
+  header.top .brand{flex-basis:100%}
+  .modesw button{padding:8px 12px;font-size:.9rem}
+}
+@media (min-width:1024px) and (max-width:1279px){
+  header.top{gap:10px}
+  .modesw button{padding:8px 12px;font-size:.9rem}
+  header.top .appswitch{padding:8px 12px}
+}
 </style>
 
 <div class="wrap" id="app"></div>
@@ -629,7 +658,9 @@ function bodyGeom(b, front, garment){
   return g;
 }
 // Kardigano priekis. side 'L' – iškirptė dešinėje (šonas kairėje), 'R' – veidrodinis.
-function cfrontGeom(b, f, side, garment){
+// Švarkui (garment==='svarkas') – priekis su atlapu (jkFrontGeom), kitiems – kaip anksčiau.
+function cfrontGeom(b, f, side, garment){ return garment==='svarkas' ? jkFrontGeom(b, f, side, garment) : cfrontGeomBase(b, f, side, garment); }
+function cfrontGeomBase(b, f, side, garment){
   const dr = ragDropOf(b); // anatominis reglanas: priekis žemesnis
   const B=bodyBase(b, garment, dr);
   const w=baseWarnings(b);
@@ -651,6 +682,65 @@ function cfrontGeom(b, f, side, garment){
   g.edgeLen = (b.ribCm||0) + (B.H-nd);
   if(dr>0) g.ragNote = ragFrontNote(dr);
   if(f.dartCm>0 && f.dartDepth>0) g.dart={y:B.Hu-Math.max(0,f.dartPos), extraCm:f.dartCm, depthCm:Math.min(f.dartDepth, B.bust-bw/2), sides:[side==='R'?'R':'L']};
+  return g;
+}
+/* ================= ŠVARKAS: priekis su atlapu (jkFrontGeom) =================
+   Megzto švarko konstrukcija: priekio kraštas tiesus iki atlapo lūžio taško (viršutinė saga); virš jo kraštas platėja – atlapas megzamas
+   kartu su priekiu (pridedant akis krašte), apykaklė – atskira detalė, prisiuvama prie iškirptės. Taip daroma, pvz., Knit Picks
+   „Fogarty Creek Blazer“: „button band is worked with the body and increased to form the lapel“, apykaklė „sewn to the neckline“
+   (https://knitpicks.com/fogarty-creek-blazer/p/51044D).
+   Lūžio linija (roll line) – nuo lūžio taško iki taško, esančio stand cm nuo kaklo taško (peties viršaus) link vidurio; per ją atlapas
+   atverčiamas. Atlapo smaigalys (atverstas) – lapelW cm statmenai lūžio linijai, notchD cm žemiau kaklo taško; mezgamoje detalėje jo vieta –
+   veidrodinis atspindys per lūžio liniją. Viršutinis atlapo kraštas eina iki kaklo taško; apykaklė prisiuvama nuo kaklo taško iki įkirpos.
+   Įkirpa – atlapo viršaus laisvos dalies viduryje (fabrics-store.com „How To Draft And Sew A Notched Collar“, 9 žingsnis: „some point in
+   the middle of the extended neck curve“, https://blog.fabrics-store.com/?p=13206). Atlapo plotis 7,5 cm – tas pats šaltinis, 7 žingsnis:
+   „normally, around 3”“. stand (2 cm) ir notchD (9 cm) – NEPATIKRINTOS prielaidos (redaguojamos detalėje „Priekis“).
+   Šalinė apykaklė (lapel:'saline'): priekis su V iškirpte nuo lūžio taško iki peties; apykaklė paimama nuo krašto ir platinama trumposiomis
+   eilėmis (Meg Swansen: „vertical shawl collars… knitted onto the finished jacket“, https://schoolhousepress.com/blog/post/blog-40-meg-swansen-on-shawl-collars).
+   Sagos: saga – ant vidurio linijos (CF), užlaida – už jos; užlaida turi būti bent ¼″ (0,6 cm) platesnė už sagą (fabrics-store.com, 4 žingsnis).
+   Viršutinė saga – ties lūžio tašku, kitos žemiau kas btnGap cm (10 cm – prielaida; forume nurodoma 9–12 cm:
+   https://www.styleforum.net/threads/bespoke-suit-button-question.6338/). Sagos skersmuo 2 cm – prielaida.
+   Vyriško švarko skylutės – kairiajame priekyje (dėvinčiojo), Wikipedia „Suit jacket“: „Single-breasted suits have just one on the left“. */
+const JK_DEF={lapel:'smailus', lapelW:7.5, notchD:9, stand:2, btnGap:10, btnD:2, holes:'kaire', overlap:3};
+const JK_NOTCH=0.5;
+function jkOpt(f){ const o=Object.assign({}, JK_DEF);
+  Object.keys(JK_DEF).forEach(k=>{ if(f && f[k]!=null && f[k]!=='') o[k]=f[k]; });
+  ['lapelW','notchD','stand','btnGap','btnD','overlap'].forEach(k=>{ const v=+o[k]; o[k]=isFinite(v)?Math.max(0,v):JK_DEF[k]; });
+  if(o.lapel!=='saline') o.lapel='smailus'; if(o.holes!=='desine') o.holes='kaire';
+  o.btnN=Math.max(0,Math.min(4,Math.round(+(f&&f.btnN)||0))); return o; }
+// Sagų aukščiai nuo apačios (cm): viršutinė – ties lūžio tašku yb, kitos kas gap žemiau.
+function jkButtons(yb, n, gap){ const a=[]; for(let i=0;i<n;i++) a.push(yb-i*gap); return a; }
+function jkFrontGeom(b, f, side, garment){
+  f=f||{}; const o=jkOpt(f), ov=o.overlap;
+  const g=cfrontGeomBase(b, Object.assign({}, f, {neckShape:'V', bandW:0, overlap:ov}), 'L', garment);
+  const B=g.base, H=g.H, dr=B.ragDrop||0, w=g.warnings;
+  const xnp=-Math.max(0,+b.neckW||0)/2, nd=Math.max(0,(+f.neckD||0)-dr);
+  let yb=H-nd;
+  if(yb>H-6){ yb=H-6; w.push('Atlapo lūžis per aukštai – padidinkite „Atlapo lūžis nuo peties“ (bent 6 cm).'); }
+  if(yb<2){ yb=2; w.push('Atlapo lūžis žemiau už detalės apačią – sumažinkite „Atlapo lūžis nuo peties“.'); }
+  const jk={style:o.lapel, side, mirror:side==='R', yb, ov, xnp, H, lapelW:o.lapelW, btnD:o.btnD, btnGap:o.btnGap, holes:o.holes,
+    holesHere:(o.holes==='kaire')===(side==='R'), B0:{x:ov,y:yb}, T:{x:xnp+o.stand,y:H}};
+  if(o.lapel==='smailus'){
+    const B0=jk.B0, T=jk.T, dx=T.x-B0.x, dy=Math.max(0.1,T.y-B0.y), len=Math.hypot(dx,dy), nx=dy/len, ny=-dx/len;
+    const yr=Math.min(H-1, Math.max(yb+1, H-o.notchD)), xr=B0.x+dx*(yr-yb)/dy;
+    const P={x:xr+o.lapelW*nx, y:yr+o.lapelW*ny};
+    if(P.y>H-1){ P.y=H-1; w.push('Atlapo smaigalys per arti peties – padidinkite „Atlapo smaigalys žemiau peties“ arba sumažinkite atlapo plotį.'); }
+    if(P.y<yb+1) P.y=yb+1;
+    const NP={x:xnp,y:H}, dist=X=>(X.x-B0.x)*nx+(X.y-B0.y)*ny, dP=dist(P), dN=dist(NP), t=dP>dN?dP/(dP-dN):0;
+    const Q={x:lerp(P.x,NP.x,t), y:lerp(P.y,NP.y,t)}, N={x:lerp(Q.x,P.x,JK_NOTCH), y:lerp(Q.y,P.y,JK_NOTCH)};
+    g.R=y=> y<=yb ? ov : (y<=P.y ? lerp(ov,P.x,(y-yb)/(P.y-yb)) : lerp(P.x,xnp,(y-P.y)/Math.max(1e-6,H-P.y)));
+    Object.assign(jk,{P,Q,N, attach:Math.hypot(N.x-NP.x,N.y-NP.y), freeTop:Math.hypot(P.x-N.x,P.y-N.y), lapelEdge:Math.hypot(P.x-B0.x,P.y-B0.y), roll:len});
+    g.neckLen=jk.attach;
+    g.edgeLen=(b.ribCm||0)+yb+jk.lapelEdge;
+  } else {
+    jk.attach=g.neckLen; jk.lapelEdge=g.neckLen; jk.roll=Math.hypot(jk.T.x-ov, H-yb);
+    g.edgeLen=(b.ribCm||0)+yb;
+  }
+  jk.btn=jkButtons(yb, o.btnN, o.btnGap);
+  if(o.btnN>0 && jk.btn[o.btnN-1]<3) w.push('Apatinė saga per arti apačios – sumažinkite sagų skaičių arba tarpą tarp sagų.');
+  if(o.btnN>0 && ov<o.btnD+0.6) w.push(`Užlaida (${fmt(ov)} cm) siauresnė už sagą + 0,6 cm – sagai reikia bent ${fmt(o.btnD+0.6)} cm.`);
+  if(side==='R'){ const L0=g.L, R0=g.R; g.L=y=>-R0(y); g.R=y=>-L0(y); g.shoulderSides=['R']; g.shoulderTop={R:-xnp}; if(g.dart) g.dart.sides=['R']; }
+  g.jk=jk;
   return g;
 }
 function sleeveGeom(p, b){
@@ -1089,6 +1179,11 @@ function licHasData(f){ try{ const st=S.stash||[];
   if(f==='mockup.photo') return !!(S.mock&&S.mock.photo&&S.mock.photo.length);
   if(f==='chart.large') return !!(S.pat&&(S.pat.W>FREE_LIMITS.chartMaxW||S.pat.H>FREE_LIMITS.chartMaxH));
   if(f==='sizes.all') return licUserProjects().length>FREE_LIMITS.sizes;
+  if(f==='freeform') return S.garment==='savas'||licUserProjects().some(p=>p&&p.garment==='savas')||Object.keys(S.edited||{}).some(k=>/^savas\//.test(k));
+  if(f==='pattern.editor') return !!(S.pat&&(S.pat.tech==='intarsija'||(S.pat.place&&S.pat.place.on)));
+  if(f==='swatch.library') return !!(S.swatches&&S.swatches.length);
+  if(f==='edging.assign') return Object.values(S.params||{}).some(p=>p&&p.edging&&Object.values(p.edging).some(v=>v&&v.id));
+  if(f==='crochet.mosaic') return !!(S.crochet&&S.crochet.grid&&(S.crochet.grid.mode==='mos'||S.crochet.grid.W>FREE_LIMITS.chartMaxW||S.crochet.grid.H>FREE_LIMITS.chartMaxH));
 }catch(e){} return false; }
 // true – vartotojas turi šios funkcijos duomenų, bet už ją nebemoka: peržiūra/spausdinimas/eksportas leidžiami, redagavimas – ne
 function licReadOnly(featureId){ return licEnforced() && !licCan(featureId) && licHasData(featureId); }
@@ -1177,7 +1272,7 @@ function licClose(){ if(licModEl){ licModEl.remove(); licModEl=null; document.re
 function licKey(e){ if(e.key==='Escape'){ e.preventDefault(); licClose(); } }
 function licUpsell(featureId){ licCss(); licClose(); const F=FEATURES[featureId]||{tier:'pro', lt:featureId}; const T=TIERS.find(t=>t.id===F.tier);
   const L=licState(), exp=licExpired(L), ro=licHasData(featureId);
-  const lim=F.limit==='projects'?`Nemokamame plane – ${FREE_LIMITS.projects} projektas. `:F.limit==='chart'?`Nemokamame plane schema – iki ${FREE_LIMITS.chartMaxW} ak. × ${FREE_LIMITS.chartMaxH} eil. `:F.limit==='sizes'?`Nemokamame plane – ${FREE_LIMITS.sizes} dydis vienu metu. `:'';
+  const lim=F.limit==='projects'?`Nemokamame plane – ${FREE_LIMITS.projects} projektas. `:(F.limit==='chart'||featureId==='crochet.mosaic')?`Nemokamame plane schema – iki ${FREE_LIMITS.chartMaxW} ak. × ${FREE_LIMITS.chartMaxH} eil. `:F.limit==='sizes'?`Nemokamame plane – ${FREE_LIMITS.sizes} dydis vienu metu. `:'';
   licLastFocus=document.activeElement;
   const d=document.createElement('div'); d.className='licmod'; d.id='licUpsell'; d.setAttribute('role','dialog'); d.setAttribute('aria-modal','true'); d.setAttribute('aria-labelledby','licUpT');
   d.innerHTML=`<div class="licbox"><h2 id="licUpT">${licEsc(F.lt)} – ${T.name}</h2>
@@ -1207,25 +1302,46 @@ const LIC_GATES=[
   {ev:'click', sel:'#mkAi', f:'mockup.ai'},
   {ev:'click', sel:'#kAll', f:'sizes.all'},
   {ev:'click', sel:'[data-act="create"]', f:'projects.multiple', tab:'pradzia', when:()=>licUserProjects().length>=FREE_LIMITS.projects},
-  {ev:'change', sel:'#pW,#pH', f:'chart.large', tab:'rastai', chart:true}];
+  {ev:'change', sel:'#pW,#pH', f:'chart.large', tab:'rastai', chart:true},
+  // Pro: raštų redaktorius – intarsija, teksto įrankis, pynių / ženklų štampai, vieta detalėje, rašto patikra
+  {ev:'change', sel:'#pTech', f:'pattern.editor', tab:'rastai', when:el=>el.value==='intarsija'},
+  {ev:'click', sel:'[data-edtool="text"],[data-edtool="stamp"],[data-stamp],#pPlC,#pChk,[data-chkshow]', f:'pattern.editor', tab:'rastai'},
+  {ev:'change', sel:'#pPlOn,#pPlDx,#pPlRow,#pPlPiece', f:'pattern.editor', tab:'rastai'},
+  // Pro: kraštų ir apvadų priskyrimas gaminiui (peržiūra „Schema ir aprašymas“ – leidžiama)
+  {ev:'change', sel:'[data-edgassign],[data-edgt],#edgTo', f:'edging.assign'},
+  // Pro: Sava forma – sukūrimas (gaminio pasirinkimas, jei dar nėra savos formos) ir redagavimas; peržiūra, spausdinimas, mezgimas – leidžiami
+  {ev:'change', sel:'#gSel', f:'freeform', when:el=>el.value==='savas'&&!licHasData('freeform')},
+  {ev:'click', sel:'[data-ff-tpl],[data-ff-ins],[data-ff-del],#ffSmoothAll,#ffStraightAll,#ffAddTop,[data-ff-gact],#ffGCopy,#ffGCopyR', f:'freeform'},
+  {ev:'change', sel:'[data-ff-y],[data-ff-x],[data-ff-seg],#ffSym,#ffRib,#ffTop,#ffTens,#ffGOn,#ffGN,#ffGNames input', f:'freeform'},
+  {ev:'input', sel:'#ffTens', f:'freeform'},
+  {ev:'pointerdown', sel:'#ffCv', f:'freeform'},
+  // Pro: spausdinimas masteliu 1:1 / 1:2 / 1:4 (įprastas spausdinimas ir PDF – visada nemokami)
+  {ev:'click', sel:'.psopen,#psOpenF,[data-ps-scale],#psPrint', f:'print.scale'},
+  // Pro: išsaugojimas į mėginių biblioteką (esamų mėginių naudojimas – leidžiamas)
+  {ev:'click', sel:'[data-sw="save"],[data-sw="savehand"],[data-sw="fsave"]', f:'swatch.library'},
+  // Pro: nėrimo mozaika ir schemos, didesnės nei FREE_LIMITS
+  {ev:'click', sel:'[data-crmode="mos"]', f:'crochet.mosaic'},
+  {ev:'change', sel:'[data-crk="grid.W"]', f:'crochet.mosaic', max:()=>FREE_LIMITS.chartMaxW},
+  {ev:'change', sel:'#crBlankH', f:'crochet.mosaic', max:()=>FREE_LIMITS.chartMaxH},
+  {ev:'click', sel:'#crFromPat', f:'crochet.mosaic', when:()=>!!(S.pat&&(S.pat.W>FREE_LIMITS.chartMaxW||S.pat.H>FREE_LIMITS.chartMaxH))}];
 function licIntercept(e){
   if(!licEnforced()||!e.target||!e.target.closest) return;
   if(licModEl&&licModEl.contains(e.target)) return;
   for(const G of LIC_GATES){ if(G.ev!==e.type) continue; const el=e.target.closest(G.sel); if(!el) continue;
     if(G.tab&&S.tab!==G.tab) continue;
     if(licCan(G.f)) continue;
-    if(G.when&&!G.when()) continue;
-    if(G.chart){ const lim=el.id==='pW'?FREE_LIMITS.chartMaxW:FREE_LIMITS.chartMaxH, v=parseInt(el.value)||0;
+    if(G.when&&!G.when(el,e)) continue;
+    if(G.chart||G.max){ const lim=G.max?G.max():el.id==='pW'?FREE_LIMITS.chartMaxW:FREE_LIMITS.chartMaxH, v=parseFloat(String(el.value).replace(',','.'))||0;
       if(v>lim){ el.value=String(lim); licUpsell(G.f); } return; }   // apribojame ir leidžiame modulio klausytojui pritaikyti
     e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation();
     licUpsell(G.f);
-    if(e.type==='change'&&typeof render==='function') setTimeout(()=>{ try{ render(); }catch(err){} },0);   // grąžiname ankstesnę reikšmę
+    if((e.type==='change'||e.type==='input')&&typeof render==='function') setTimeout(()=>{ try{ render(); }catch(err){} },0);   // grąžiname ankstesnę reikšmę
     return; } }
 function licDelegate(e){ const t=e.target; if(!t||!t.closest) return;
   if(e.type==='click'&&t.closest('#licBadge')){ licShowPlans(); return; }
   if(e.type==='click'&&t.closest('#licAct')){ const k=document.getElementById('licKey'); try{ licActivate(k?k.value.trim():''); }catch(err){ LIC_UI.msg=err.message; } const m=document.getElementById('licMsg'); if(m) m.textContent=LIC_UI.msg; return; }
   if(e.type==='change'&&t.id==='licCur'){ LIC_UI.cur=t.value; const p=document.getElementById('licPanel'); if(p){ const n=document.createElement('div'); n.innerHTML=licPanelHtml(); p.replaceWith(n.firstElementChild); } } }
-try{ ['click','change'].forEach(ev=>document.addEventListener(ev,licIntercept,true));
+try{ ['click','change','input','pointerdown'].forEach(ev=>document.addEventListener(ev,licIntercept,true));
   ['click','change'].forEach(ev=>document.addEventListener(ev,licDelegate)); }catch(e){}
 
 const GARMENTS = {
@@ -1748,6 +1864,226 @@ EXTRA_SPECIAL.shawledge=function(P,pc,gk,g,m,spc){ const p=P.skara, d=shDims(p),
     if(m && m.id==='SK155') warnings.push(T.machine); }
   if(!stats.length) stats.push([fmt(d.edgeLen)+' cm','kraštų ilgis']);
   return {pc, special:true, sim:{sections:secs, warnings, stats, area}}; };
+
+/* ================= ŠVARKAS (vyriškas; tinka ir moteriškas) =================
+   Detalės: nugara (nebūtina vidurio siūlė), 2 priekiai su atlapu (geometrija – core.js jkFrontGeom), įsiūta vientisa rankovė
+   (megztiems drabužiams įprasta; siuvamo švarko dvisiūlė rankovė – tik kaip siuvimo pavyzdys, neįgyvendinta), atlapo apdaila (facing),
+   apykaklė (+ apatinė apykaklė) arba šalinė apykaklė, kišenės ir surinkimas.
+   Šaltiniai:
+   – Konstrukcija (atlapas megzamas su priekiu, apykaklė atskirai prisiuvama, įsiūtos rankovės): Knit Picks „Fogarty Creek Blazer“,
+     https://knitpicks.com/fogarty-creek-blazer/p/51044D
+   – Atlapo plotis ~3″, apykaklės plotis nugaroje 2¾″ (≈ 7 cm), apdaila 2″ (5 cm) nuo priekio krašto apačioje ir nuo kaklo taško,
+     įkirpa atlapo viršaus viduryje, užlaida ≥ saga + ¼″: fabrics-store.com „How To Draft And Sew A Notched Collar“,
+     https://blog.fabrics-store.com/?p=13206
+   – Sagos: viršutinė (2 sagų) / vidurinė (3 sagų) – ties natūraliu liemeniu; skylutės – kairėje; kišenės: užsiuvamos (patch),
+     su atvartu (flap), apvadinės (jetted); krūtinės kišenė – kairėje: Wikipedia „Suit jacket“, https://en.wikipedia.org/wiki/Suit_jacket;
+     samtalksstyle.com „Jacket Button Stance“ (3 sagų švarko vidurinė saga – ties 2 sagų švarko viršutine),
+     https://samtalksstyle.com/2019/11/05/jacket-button-stance-what-is-it-and-why-is-it-important/
+   – Įmegzta kišenė pagalbiniu siūlu (apačios akys – apvadas, viršaus – pamušalas): Tin Can Knits „Pocket Power“,
+     https://blog.tincanknits.com/2021/07/15/pocket-power-how-to-add-pockets-to-any-sweater-you-like/ ;
+     užsiuvama kišenė ir horizontali kišenė su pamušalu: Interweave „Put a Pocket on It“, https://www.interweave.com/article/knitting/put-a-pocket-on-it
+   – Ilgis: švarkas turi uždengti sėdmenis (Permanent Style, https://www.permanentstyle.com/2020/03/video-how-long-should-a-jacket-be.html).
+   Prielaidos (redaguojamos, pažymėtos Modelyje): lūžio linijos stovelis 2 cm, atlapo smaigalys 9 cm žemiau peties, tarpas tarp sagų 10 cm,
+   sagos skersmuo 2 cm, kišenių dydžiai ir vietos, apatinės apykaklės sumažinimas 2 eil. */
+GARMENTS.svarkas={name:'Švarkas', pieces:[
+  {id:'nugara',name:'Nugara',kind:'body',count:1},
+  {id:'kairys',name:'Priekis (atlapas dešinėje)',kind:'cfront',side:'L',param:'priekis',count:1},
+  {id:'desinys',name:'Priekis (atlapas kairėje)',kind:'cfront',side:'R',param:'priekis',count:1},
+  {id:'rankove',name:'Rankovė',kind:'sleeve',count:2},
+  {id:'apdaila',name:'Atlapo apdaila',kind:'jfacing',count:2},
+  {id:'apykakle',name:'Apykaklė',kind:'jcollar',count:1},
+  {id:'kisenes',name:'Kišenės ir surinkimas',kind:'jpockets',count:1}]};
+const JK_PDEF={ apdaila:{facing:'visas', facingW:5}, apykakle:{collarW:7, collarEnd:5, under:'taip'},
+  kisenes:{type:'iterptos', pocketW:15, pocketH:15, pocketY:20, weltH:2.5, breast:'taip', breastW:10, breastH:12} };
+function jkPar(P, id){ const o=Object.assign({}, JK_PDEF[id]||{}, (P&&P[id])||{});
+  Object.keys(JK_PDEF[id]||{}).forEach(k=>{ if(typeof JK_PDEF[id][k]==='number'){ const v=+o[k]; o[k]=isFinite(v)?Math.max(0,v):JK_PDEF[id][k]; } }); return o; }
+DEF.svarkas={
+  nugara:{hemW:57,waistW:53,bustW:56,hemToWaist:31,waistToUnderarm:18,ribCm:0,armType:'isiuta',ragCurveRem:0,armRemove:6.8,armCurve:8.2,armDepth:23.5,slope:2.5,method:'paprastas',neckW:14.2,neckD:2,cbSeam:'ne'},
+  priekis:{neckShape:'V',neckD:44,bandW:0,overlap:3,btnN:2,btnBottom:14,btnTop:3,dartCm:0,dartDepth:10,dartPos:5,lapel:'smailus',lapelW:7.5,notchD:9,stand:2,btnGap:10,btnD:2,holes:'kaire'},
+  rankove:{cuffW:30.5,upperW:40.6,length:47,ribCm:0,capH:14,capTop:8},
+  apdaila:clone(JK_PDEF.apdaila), apykakle:clone(JK_PDEF.apykakle), kisenes:clone(JK_PDEF.kisenes)};
+// pavyzdžio rankovės viršus suderinamas su iškarpa (tas pats būdas kaip config.js fitCapP)
+(function(){ try{ const P=DEF.svarkas, sp=P.rankove, b=bodyGeom(P.nugara,null,'svarkas'), target=2*curveLen(b.base.side,b.Hu,b.armTop);
+  const f=h=>{ const s=sleeveGeom(Object.assign({},sp,{capH:h}),P.nugara); return 2*curveLen(s.half,s.L1,s.H)+sp.capTop; };
+  let lo=Math.max(P.nugara.armCurve,0.5)+0.01, hi=45; if(f(lo)<=target && f(hi)>=target){ for(let k=0;k<50;k++){ const m=(lo+hi)/2; if(f(m)<target) lo=m; else hi=m; } sp.capH=Math.round(hi*10)/10; } }catch(e){} })();
+FIELDS.body.push({k:'cbSeam',l:'Nugaros vidurio siūlė',type:'select',full:true,only:['svarkas'],opts:[['ne','Be siūlės (viena detalė)'],['taip','Su siūle (dvi veidrodinės pusės)']],hint:'Siuvamame švarke vidurio siūlė padeda formuoti nugarą; megztame – nebūtina. Su siūle kiekvienai pusei pridedama 1 siūlės akis'});
+(function(){ const L=FIELDS.cfront, at=k=>L.findIndex(f=>f.k===k);
+  L.forEach(f=>{ if(f.k==='btnBottom'||f.k==='btnTop'){ const h=f.hideIf; f.hideIf=(p,c)=>(c&&c.gk==='svarkas')||(h?h(p,c):false); } });
+  L.splice(at('neckD')+1,0,
+    {k:'lapel',l:'Atlapas',type:'select',full:true,only:['svarkas'],opts:[['smailus','Su įkirpa (klasikinis)'],['saline','Šalinė apykaklė']],hint:'Su įkirpa – atlapas megzamas su priekiu, apykaklė atskira. Šalinė – apykaklė paimama nuo krašto ir platinama trumposiomis eilėmis'},
+    {k:'lapelW',l:'Atlapo plotis',u:'cm',only:['svarkas'],hideIf:p=>p.lapel==='saline',hint:'Atversto atlapo plotis statmenai lūžio linijai. Dažniausiai apie 7,5 cm (3″)'},
+    {k:'notchD',l:'Atlapo smaigalys žemiau peties',u:'cm',only:['svarkas'],hideIf:p=>p.lapel==='saline',hint:'Prielaida 9 cm – keiskite pagal modelį'},
+    {k:'stand',l:'Lūžio linija nuo kaklo taško',u:'cm',only:['svarkas'],hint:'Kiek viršuje lūžio linija praeina vidurio link nuo kaklo taško (apykaklės stovelis). Prielaida 2 cm'});
+  L.splice(at('btnN')+1,0,
+    {k:'btnGap',l:'Tarpas tarp sagų',u:'cm',only:['svarkas'],hint:'Prielaida 10 cm (siuvamuose švarkuose dažnai 9–12 cm)'},
+    {k:'btnD',l:'Sagos skersmuo',u:'cm',only:['svarkas'],hint:'Užlaida turi būti bent 0,6 cm platesnė už sagą'},
+    {k:'holes',l:'Skylutės',type:'select',full:true,only:['svarkas'],opts:[['kaire','Kairiajame priekyje (vyriškas)'],['desine','Dešiniajame priekyje (moteriškas)']],hint:'Kairysis / dešinysis – dėvinčiojo'});
+})();
+Object.assign(FIELDS, {
+  jfacing:[
+    {k:'facing',l:'Apdaila',type:'select',full:true,opts:[['visas','Per visą priekio ilgį'],['ne','Be apdailos']],hint:'Atverstame atlape matosi apdailos veidinė pusė. Be apdailos atlapą ir apykaklę megzkite dvipusiu raštu'},
+    {k:'facingW',l:'Apdailos plotis',u:'cm',hint:'Nuo priekio krašto apačioje ir nuo kaklo taško viršuje (5 cm = 2″)'}],
+  jcollar:[
+    {k:'collarW',l:'Apykaklės plotis nugaroje',u:'cm',hint:'≈ 7 cm (2¾″)'},
+    {k:'collarEnd',l:'Apykaklės galų plotis',u:'cm',hideIf:(p,c)=>jkStyle(c)==='saline',hint:'Prie įkirpos. Prielaida 5 cm'},
+    {k:'under',l:'Apatinė apykaklė',type:'select',full:true,hideIf:(p,c)=>jkStyle(c)==='saline',opts:[['taip','Taip – dvi detalės (viršutinė ir apatinė)'],['ne','Ne – viena detalė']]}],
+  jpockets:[
+    {k:'type',l:'Apatinės kišenės',type:'select',full:true,opts:[['iterptos','Įmegztos su pamušalu ir apvadu'],['uzsiuvamos','Užsiuvamos (lopinės)'],['ne','Be kišenių']]},
+    {k:'pocketW',l:'Plotis',u:'cm',hideIf:p=>p.type==='ne'},
+    {k:'pocketH',l:'Gylis',u:'cm',hideIf:p=>p.type==='ne'},
+    {k:'pocketY',l:'Anga nuo apačios',u:'cm',hideIf:p=>p.type==='ne',hint:'Užsiuvamai – viršutinis kraštas'},
+    {k:'weltH',l:'Apvado aukštis',u:'cm',hint:'Įmegztų kišenių apvadas; užsiuvamai – viršaus juostelė'},
+    {g:'Krūtinės kišenė'},
+    {k:'breast',l:'Krūtinės kišenė',type:'select',full:true,opts:[['taip','Taip (kairėje, įmegzta)'],['ne','Ne']]},
+    {k:'breastW',l:'Plotis',u:'cm',hideIf:p=>p.breast!=='taip'},
+    {k:'breastH',l:'Gylis',u:'cm',hideIf:p=>p.breast!=='taip'}]
+});
+function jkStyle(c){ try{ return (S.params[c.gk].priekis||{}).lapel==='saline'?'saline':'smailus'; }catch(e){ return 'smailus'; } }
+Object.assign(PIECE_NOTE, {
+  jfacing:'Apdaila (facing) prisiuvama prie priekio krašto ir atlapo iš vidaus – atvertus atlapą matosi jos veidinė pusė. Dvi detalės, veidrodinės.',
+  jcollar:'Su įkirpa: apykaklė megzama atskirai ir prisiuvama nuo vienos įkirpos per nugarą iki kitos. Šalinė: akys paimamos nuo priekių ir nugaros krašto.',
+  jpockets:'Kišenių pamušalai, apvadai, sagų vietos ir surinkimo eiga. Įmegztų kišenių angos pažymimos prieky (žr. priekių instrukcijas).'
+});
+/* --- švarko pagalbinės funkcijos --- */
+function jkFrontOf(P, side, gk){ return cfrontGeom(P.nugara, P.priekis, side||'L', gk||'svarkas'); }
+// Apdailos geometrija: tarp priekio krašto (su atlapu) ir linijos, einančios facingW cm nuo krašto apačioje iki facingW cm nuo kaklo taško viršuje.
+// Detalė veidrodinė priekiui L (prisiuvama veidinėmis pusėmis kartu).
+function jkFacingGeom(fg, fw){ const jk=fg.jk, H=fg.H, R0=y=>(jk.mirror?-fg.L(y):fg.R(y)), x0=R0(0)-fw, x1=jk.xnp-fw;
+  const inner=y=>lerp(x0,x1,y/H);
+  return {H, L:y=>-R0(y), R:y=>-inner(y), neckHalf:null, ss:null, ribCm:0, finish:'bind', method:'paprastas', warnings:[],
+    finishText:w=>`likusias ${w} ak. uždarykite – šis kraštas prisiuvamas prie peties siūlės ir apykaklės.`}; }
+function jkNeedle(i){ return i<0 ? 'K'+(-i) : 'D'+(i+1); } // adata (akis tarp ribų i ir i+1)
+function jkRcOf(geom, sim, y, rpc){ let rc=Math.max(1,srnd(y*rpc)); if(geom.dart && sim.dartRows && y>geom.dart.y) rc+=sim.dartRows; return Math.min(rc, sim.N); }
+function jkRowAt(sim, rc){ const rows=(sim.parts[0]||{}).rows||[]; return rows.find(r=>r.rc===rc+1)||rows[rows.length-1]||{L:sim.castOn.L,R:sim.castOn.R}; }
+function jkInsert(items, note){ const i=items.findIndex(e=>e.rc!=null && e.rc>note.rc); if(i<0) items.push(note); else items.splice(i,0,note); }
+// Kišenių vietos priekyje (cm, detalės koordinatėmis): [{kind:'low'|'breast', y, x1, x2, W}]
+function jkPocketSpots(P, geom, gk){ const k=jkPar(P,'kisenes'), jk=geom.jk, out=[]; if(!jk) return out;
+  const sideX=y=>jk.mirror?geom.R(y):geom.L(y);
+  if(k.type==='iterptos'||k.type==='uzsiuvamos'){ const y=Math.min(k.pocketY, geom.Hu-2), xc=sideX(y)/2, W=Math.min(k.pocketW, Math.abs(sideX(y))-4);
+    if(W>2) out.push({kind:'low', type:k.type, y, x1:xc-W/2, x2:xc+W/2, W, H:k.pocketH}); }
+  if(k.breast==='taip' && jk.side==='R'){ const y=Math.min(geom.Hu+1.5, geom.H-10), xc=sideX(y)/2, W=Math.min(k.breastW, Math.abs(sideX(y))-4);
+    if(W>2) out.push({kind:'breast', type:'iterptos', y, x1:xc-W/2, x2:xc+W/2, W, H:k.breastH}); }
+  return out; }
+// Skylutės priekyje: [{y, x1, x2}] cm; išorinis galas 1 akimi už vidurio linijos link krašto.
+function jkHoleSpots(geom, spc){ const jk=geom.jk; if(!jk||!jk.holesHere) return [];
+  const k=Math.max(2,srnd(jk.btnD*spc)-1), xo=1/spc;
+  return jk.btn.map(y=> jk.mirror ? {y, x1:-xo, x2:-xo+k/spc, k} : {y, x1:xo-k/spc, x2:xo, k}); }
+EXTRA_POST.cfront=function(P,pc,gk,g,sim,geom){ if(gk!=='svarkas'||!geom.jk) return;
+  const jk=geom.jk, spc=g.sts/10, rpc=g.rows/10, shift=sim.castOn.L-srnd(geom.L(0)*spc), nx=x=>srnd(x*spc)+shift, main=sim.sections[1].items;
+  const start=sim.sections[0].items, rb=jkRcOf(geom,sim,jk.yb,rpc), sg=jk.mirror?-1:1;
+  start.push({note: jk.style==='smailus'
+    ? `Atlapas megzamas kartu su priekiu: nuo lūžio taško (RC ${pad(rb)}) ${jk.mirror?'kairiajame':'dešiniajame'} krašte pridedamos akys – priekis platėja; viršuje kraštas įstrižai uždaromas iki kaklo taško. Atverstas atlapas bus ${fmt(jk.lapelW)} cm pločio.`
+    : `Šalinė apykaklė: nuo lūžio taško (RC ${pad(rb)}) ${jk.mirror?'kairysis':'dešinysis'} kraštas siaurėja iki peties (V). Apykaklė paimama vėliau (detalė „Apykaklė“).`});
+  jkInsert(main,{rc:rb, note:`RC ${pad(rb)}: atlapo lūžio taškas – kraštinę akį pažymėkite kontrastiniu siūlu. Lūžio linija eina nuo adatos ${jkNeedle(nx(sg*jk.B0.x)-(jk.mirror?0:1))} iki adatos ${jkNeedle(nx(sg*jk.T.x)-(jk.mirror?0:1))} ties viršumi – per ją atlapas atverčiamas.`});
+  const holes=jkHoleSpots(geom,spc).map(h=>{ const rc=jkRcOf(geom,sim,h.y,rpc), a=nx(h.x1), b=a+h.k, row=jkRowAt(sim,rc); return {rc, a, b, y:h.y, ok:a>=row.L && b<=row.R}; });
+  holes.forEach((h,i)=>jkInsert(main,{rc:h.rc, note:`RC ${pad(h.rc)}: ${i+1}-oji sagos skylutė (${fmt(h.y)} cm nuo apačios) ant adatų ${needleSpan(h.a,h.b)} (${h.b-h.a} ak.): atskiru siūlo galu ranka numegzkite šias akis ir uždarykite; tuščias adatas apvyniokite pagrindiniu siūlu (užmetimas apvyniojant) ir megzkite toliau.`}));
+  if(holes.some(h=>!h.ok)) sim.warnings.push('Sagos skylutė nepatenka į detalę – patikrinkite užlaidą ir sagų vietas.');
+  if(holes.length) start.push({note:`Skylutės – šiame priekyje (${jk.holes==='kaire'?'kairysis dėvinčiojo priekis – vyriškas':'dešinysis dėvinčiojo priekis – moteriškas'}). Saga bus ant vidurio linijos; skylutės išorinis galas – 1 akimi už jos link krašto. Skylutės ilgis – sagos skersmuo minus 1 akis (mezginys tampa – prielaida, išbandykite ant mėginio).`});
+  else if(jk.btn.length) start.push({note:`Šiame priekyje skylučių nėra – sagos prisiuvamos ant vidurio linijos (žr. „Kišenės ir surinkimas“).`});
+  const pk=jkPocketSpots(P,geom,gk).filter(s=>s.type==='iterptos').map(s=>{ const rc=jkRcOf(geom,sim,s.y,rpc), a=nx(s.x1), b=a+Math.max(2,srnd(s.W*spc)), row=jkRowAt(sim,rc); return Object.assign({rc,a,b,ok:a>row.L&&b<row.R},s); });
+  pk.forEach(s=>jkInsert(main,{rc:s.rc, note:`RC ${pad(s.rc)}: ${s.kind==='breast'?'krūtinės':'apatinės'} kišenės anga – ${s.b-s.a} ak. ant adatų ${needleSpan(s.a,s.b)} numegzkite ranka kontrastiniu pagalbiniu siūlu, adatas grąžinkite į darbą ir tęskite pagrindiniu. Pamušalas ir apvadas – detalėje „Kišenės ir surinkimas“.`}));
+  if(pk.some(s=>!s.ok)) sim.warnings.push('Kišenės anga nepatenka į detalę – sumažinkite kišenės plotį.');
+  sim.jk={holes, pockets:pk, rb};
+};
+EXTRA_POST.body=function(P,pc,gk,g,sim,geom){ if(gk!=='svarkas'||!P.nugara||P.nugara.cbSeam!=='taip') return;
+  const R=sim.castOn.R, h=sim.rc0!=null?srnd(geom.neckHalf(geom.H)*(g.sts/10)):0;
+  sim.sections[0].items.splice(1,0,{note:`Nugara su vidurio siūle: megzkite dvi veidrodines puses. Dešinei pusei užmeskite ${R+1} ak. ant adatų ${needleSpan(-1,R)} (K1 – siūlės akis). Visus dešiniojo krašto veiksmus darykite kaip aprašyta, kairysis kraštas (nugaros vidurys) lieka tiesus${sim.rc0!=null?`; RC ${pad(sim.rc0)} kairiajame krašte uždarykite ${h+1} ak. (kaklo iškirptė) ir tęskite kaip „Dešinė pusė“`:''}. Kairę pusę megzkite veidrodiškai. Puses susiūkite per siūlės akis.`}); };
+EXTRA_SPECIAL.jfacing=function(P,pc,gk,g,m,spc){ const a=jkPar(P,'apdaila');
+  if(gk!=='svarkas'||a.facing==='ne') return {pc, special:true, sim:{sections:[{title:'Atlapo apdaila', items:[{note:'Apdaila nepasirinkta. Atverstame atlape ir apykaklėje matysis mezginio išvirkščia pusė – atlapą ir apykaklę megzkite dvipusiu raštu (pvz., keliaraščiu) arba pasirinkite apdailą.'}]}], warnings:[], stats:[[0,'detalių']], area:0}};
+  const fg=jkFrontOf(P,'L',gk), geom=jkFacingGeom(fg, Math.max(1,a.facingW||5));
+  const sim=simulate(geom, g, {carriage:(typeof S!=='undefined'&&S.carriage)||'D', needles:m.needles, machineName:m.full, ribber:m.ribber, machine:m});
+  const rpc=g.rows/10, hs=jkHoleSpots(fg, spc), side=fg.jk.holes==='kaire'?'kairiojo':'dešiniojo';
+  sim.sections[0].items.push({note:'Numegzkite 2 apdailas: vieną pagal aprašymą, kitą – veidrodiškai. Apdaila prisiuvama prie priekio krašto veidinėmis pusėmis kartu ir atverčiama į vidų; atlape matosi apdailos veidinė pusė.'});
+  if(hs.length){ const rcs=hs.map(h=>pad(jkRcOf(geom,sim,h.y,rpc))); sim.sections[0].items.push({note:`${cap1(side)} priekio apdailoje padarykite skylutes tose pačiose eilėse kaip priekyje (RC ${rcs.join(', ')}), ${srnd(fg.jk.ov*spc)-1} ak. nuo krašto, po ${hs[0].k} ak.`}); }
+  return {pc, geom, sim}; };
+EXTRA_SPECIAL.jcollar=function(P,pc,gk,g,m,spc){ const c=jkPar(P,'apykakle'), fg=jkFrontOf(P,'L',gk), jk=fg.jk, back=bodyGeom(P.nugara,null,gk), rpc=g.rows/10;
+  const T=typeof machTerms==='function'?machTerms(m):{holdOn:'',hold:'D',toKnit:'pastumkite į C padėtį'};
+  const bS=Math.max(2,srnd(back.neckLen*spc)), aS=Math.max(1,srnd(jk.attach*spc)), n=bS+2*aS, L=-Math.floor(n/2), R=n+L, warnings=[];
+  if(n>m.needles) warnings.push(`Apykaklei reikia ${n} adatų, ${m.name} turi ${m.needles}. Megzkite dviem dalimis ir susiūkite nugaros viduryje.`);
+  if(jk.style==='saline'){ const Rw=2*Math.max(1,srnd(c.collarW*rpc/2)), grp=shortRowGroups(aS,Rw/2).filter(x=>x>0);
+    const items=[{note:`Apykaklės kraštas: 2 priekiai po ${fmt(jk.attach)} cm (nuo lūžio taško iki peties) + nugara ${fmt(back.neckLen)} cm. Susiuvę pečius ir prisiuvę apdailas, užkabinkite ${n} ak. nuo krašto ant adatų ${needleSpan(L,R)}: viduryje ${bS} nugaros ak., abipus po ${aS}.`},
+      {note:`${T.holdOn} Abipus po ${aS} adatų pastumkite į laikymo padėtį ${T.hold||'(HP)'} – pradžioje mezgamos tik nugaros akys.`},
+      {note:`Kiekvieną eilę pusėje, priešingoje karietėlei, grąžinkite į darbą po ${grp.join(', ')} adatas (iš viso ${Rw} eil.). Apykaklė nugaroje bus ${fmt(c.collarW)} cm, ties lūžio tašku – siaura.`},
+      {note:'Numegzkite 2 eil. per visas akis ir uždarykite laisvai. Apykaklę atverskite; šalinės apykaklės išvirkščia pusė matysis, todėl megzkite ją dvipusiu raštu (pvz., keliaraščiu ar 1×1) arba dvigubą (sulenktą).'}];
+    return {pc, special:true, sim:{sections:[{title:'Šalinė apykaklė', items}], warnings, stats:[[n,'paimti akių'],[Rw,'eilių']], area:(back.neckLen+2*jk.attach)*c.collarW*0.6}}; }
+  const rEnd=Math.max(2,srnd(c.collarEnd*rpc)), Rw=2*Math.max(0,srnd(Math.max(0,c.collarW-c.collarEnd)*rpc/2)), grp=Rw>0?shortRowGroups(aS,Rw/2).filter(x=>x>0):[];
+  const under=c.under!=='ne', items=[
+    {note:`Prisiuvamas kraštas: nugara ${fmt(back.neckLen)} cm + 2 × ${fmt(jk.attach)} cm (nuo kaklo taško iki įkirpos) = ${fmt(back.neckLen+2*jk.attach)} cm.`},
+    {note:`Užmeskite ${n} ak. ant adatų ${needleSpan(L,R)} (šis kraštas prisiuvamas prie iškirptės). Viduryje ${bS} ak. – nugara, abipus po ${aS} ak. – priekiai iki įkirpos.`},
+    {note:`Numegzkite ${rEnd} eil. per visas akis (${fmt(c.collarEnd)} cm – apykaklės galų plotis).`}];
+  if(Rw>0){ items.push({note:`${T.holdOn} Trumposios eilės – apykaklė nugaroje platesnė: kiekvieną eilę pusėje, priešingoje karietėlei, pastumkite į laikymo padėtį ${T.hold||'(HP)'} po ${grp.join(', ')} adatas, kol abipus bus laikoma po ${aS} (iš viso ${Rw} eil.). Dirba tik ${bS} nugaros adatos.`},
+    {note:`Laikomas adatas ${T.toKnit||'grąžinkite į darbą'} ir numegzkite 1 eil. per visas akis. Nugaroje apykaklė ${fmt(c.collarW)} cm, galuose – ${fmt(c.collarEnd)} cm.`}); }
+  items.push({note:'Išorinį kraštą uždarykite laisvai (3–4 tempimo numeriais laisviau) – jis ilgesnis už prisiuvamą kraštą, todėl turi tįsti.'});
+  if(under) items.push({note:`Apatinė apykaklė: numegzkite antrą tokią pat detalę, tik ${Math.max(1,rEnd-2)} eil. vietoje ${rEnd} (2 eil. siauresnę), kad siūlė pasislėptų apačioje (prielaida). Sudėkite išvirkščiomis pusėmis, išorinį kraštą ir galus susiūkite.`});
+  items.push({note:`Prisiuvimas: nuo vienos įkirpos (${fmt(jk.freeTop)} cm nuo atlapo smaigalio) per nugarą iki kitos, ${under?'apatinę apykaklę – prie priekio ir nugaros, viršutinę – prie apdailos':'prie iškirptės krašto'}.`});
+  const area=(back.neckLen+2*jk.attach)*(c.collarEnd+Math.max(0,c.collarW-c.collarEnd)*0.6)*(under?2:1);
+  return {pc, special:true, sim:{sections:[{title:'Apykaklė su įkirpa', items}], warnings, stats:[[n,'užmesti akių'],[rEnd+Rw+1,'eilių'],[under?2:1,'detalės']], area}}; };
+function jkButtonText(fg){ const jk=fg.jk; if(!jk.btn.length) return 'Be sagų.';
+  return `Sagos (${jk.btn.length} vnt., ${fmt(jk.btnD)} cm) – ${jk.holes==='kaire'?'dešiniajame (dėvinčiojo) priekyje, skylutės – kairiajame':'kairiajame (dėvinčiojo) priekyje, skylutės – dešiniajame'}: ${jk.btn.map(y=>fmt(y)+' cm').join(', ')} nuo apačios, ant vidurio linijos (${fmt(jk.ov)} cm nuo krašto).`; }
+EXTRA_SPECIAL.jpockets=function(P,pc,gk,g,m,spc){ const k=jkPar(P,'kisenes'), rpc=g.rows/10, fg=jkFrontOf(P,'L',gk), fR=jkFrontOf(P,'R',gk), secs=[], warnings=[]; let area=0, cnt=0;
+  const welt=W=>`Apvadas: ištraukę pagalbinį siūlą, apatines ${srnd(W*spc)} kilpas pakabinkite ant adatų ir numegzkite ${Math.max(2,srnd(2*k.weltH*rpc))} eil. (${fmt(k.weltH)} cm, dvigubai – sulenkite į vidų) arba ${Math.max(1,srnd(k.weltH*rpc))} eil. dvipusiu raštu; uždarykite laisvai.`;
+  const lining=(W,H)=>`Pamušalas: viršutines ${srnd(W*spc)} kilpas pakabinkite ant adatų (išvirkščia puse į save) ir numegzkite ${Math.max(2,srnd(H*rpc))} eil. (${fmt(H)} cm); uždarykite.`;
+  const low=jkPocketSpots(P,fg,gk).find(s=>s.kind==='low');
+  if(k.type!=='ne' && low){ cnt+=2;
+    if(low.H>low.y-1) warnings.push('Kišenės gylis didesnis už atstumą iki apačios – sumažinkite gylį arba pakelkite angą.');
+    if(k.type==='iterptos'){ secs.push({title:'Apatinės kišenės (2 vnt.)', items:[
+      {note:`Anga ${fmt(low.W)} cm, ${fmt(low.y)} cm nuo apačios, priekio viduryje tarp šono ir vidurio linijos (vieta – prielaida; anga numezgama priekiuose pagalbiniu siūlu).`},
+      {note:welt(low.W)},{note:lining(low.W,low.H)},
+      {note:'Pamušalo šonus ir apačią prisiūkite iš vidaus, apvado galus – iš išorės (Tin Can Knits „Pocket Power“).'}]}); area+=2*low.W*(low.H+2*k.weltH); }
+    else { const r=Math.max(2,srnd(low.H*rpc)), wr=Math.max(1,srnd(k.weltH*rpc));
+      secs.push({title:'Užsiuvamos kišenės (2 vnt.)', items:[
+      {note:`Užmeskite ${srnd(low.W*spc)} ak. ir numegzkite ${r} eil. (${fmt(low.H)} cm)${wr?`, viršuje – ${wr} eil. (${fmt(k.weltH)} cm) dvipusiu raštu, kad kraštas nesirietų`:''}; uždarykite.`},
+      {note:`Prisiūkite ant priekių: viršutinis kraštas ${fmt(low.y)} cm nuo apačios, priekio viduryje (Interweave „Put a Pocket on It“).`}]}); area+=2*low.W*(low.H+k.weltH); } }
+  const br=jkPocketSpots(P,fR,gk).find(s=>s.kind==='breast');
+  if(k.breast==='taip' && br){ cnt+=1; secs.push({title:'Krūtinės kišenė (kairėje)', items:[
+      {note:`Anga ${fmt(br.W)} cm kairiajame (dėvinčiojo) priekyje, ${fmt(br.y)} cm nuo apačios – ties pažastimi (vieta – prielaida).`},{note:welt(br.W)},{note:lining(br.W,br.H)}]}); area+=br.W*(br.H+2*k.weltH); }
+  secs.push({title:'Sagos', items:[{note:jkButtonText(fg)},{note:'Sagas prisiūkite su „kojele“ (keli siūlo apvijimai po saga) – stora megzta užlaida turi tilpti po saga.'}]});
+  secs.push({title:'Surinkimas', items:[
+    {note:'1. Detales išskalbkite ar suformuokite garais pagal mėginį ir išdžiovinkite paguldytas.'},
+    {note:'2. Susiūkite (arba sujunkite akis į akį) pečius.'},
+    {note:'3. Apdailas prisiūkite prie priekių krašto ir atlapo veidinėmis pusėmis kartu, atverskite į vidų; viršų prisiūkite prie peties siūlės.'},
+    {note:'4. Įsiūkite rankoves: rankovės viršaus vidurį – prie peties siūlės, pažastis – prie pažasties.'},
+    {note:'5. Susiūkite šonus ir rankovių siūles vienu ištisiniu siūlu.'},
+    {note:'6. Prisiūkite apykaklę (detalė „Apykaklė“), atlapus atverskite per lūžio liniją ir lengvai pagarinkite.'},
+    {note:'7. Pabaikite kišenes ir prisiūkite sagas.'},
+    {note:'Apačios kraštas: lygus mezginys riečiasi – pasirinkite kraštą (Detalės → Kraštai) arba megzkite dvigubą užlenktą kraštą.'},
+    {note:'Pastaba: siuvamo švarko dvisiūlė rankovė ir skeltukas (vent) čia nedaromi – megztam švarkui naudojama vientisa įsiūta rankovė.'}]});
+  return {pc, special:true, sim:{sections:secs, warnings, stats:[[cnt,'kišenės'],[fg.jk.btn.length,'sagų']], area}}; };
+/* --- rankinis mezgimas (handknit.js: HK_EXTRA – specialios detalės, HK_EXTRA_MAIN – papildomos eilutės detalėje) --- */
+const HK_EXTRA={
+  jfacing(gk,pc){ const a=jkPar(S.params[gk],'apdaila'); if(a.facing!=='ne') return null;
+    return {title:pc.name, secs:[{title:pc.name, items:[{a:null, text:'Apdaila nepasirinkta – atlapą ir apykaklę megzkite dvipusiu raštu (pvz., keliaraščiu, ryžiuku).'}]}], stats:[], warns:[], round:false}; },
+  jcollar(gk,pc,tech){ const P=S.params[gk], c=jkPar(P,'apykakle'), fg=jkFrontOf(P,'L',gk), jk=fg.jk, back=bodyGeom(P.nugara,null,gk), G=hkG(), H=hkState();
+    const W=x=>srnd(x*G.spc), RW=x=>Math.max(1,srnd(x*G.rpc)), bS=Math.max(2,W(back.neckLen)), aS=Math.max(1,W(jk.attach)), n=bS+2*aS;
+    tech.add(H.shoulder==='vokiskos'?'gsr':'wt'); tech.add('bo');
+    if(jk.style==='saline'){ const R=2*Math.max(1,srnd(c.collarW*G.rpc/2)), grp=shortRowGroups(aS,R/2).filter(x=>x>0); tech.add('pu');
+      return {title:'Šalinė apykaklė', secs:[{title:'Šalinė apykaklė', items:[
+        {a:null, text:`Susiuvę pečius, veidinėje pusėje paimkite ${n} ak.: ${aS} (priekis nuo lūžio taško) + ${bS} (nugara) + ${aS} (priekis).`, sts:n},
+        {a:1, b:R, sub:'trumposios eil.', text:`Trumposios eilės nuo nugaros: pirma eilė – per ${bS} nugaros ak.${grp[0]?` ir dar ${grp[0]}`:''}, apsukite (${H.shoulder==='vokiskos'?'vokiška trumpoji eilė':'w&t'}); toliau kiekvienoje eilėje paimkite vis daugiau priekio akių: ${grp.join(', ')} (iš viso ${R} eil.). Megzkite dvipusiu raštu.`},
+        {a:R+1, b:R+2, sub:'eil.', text:'Numegzkite 2 eil. per visas akis ir laisvai uždarykite. Apykaklę atverskite.'}]}], stats:[[n,'paimti akių'],[R,'eilių']], warns:[], round:false}; }
+    const rEnd=RW(c.collarEnd), R=2*Math.max(0,srnd(Math.max(0,c.collarW-c.collarEnd)*G.rpc/2)), grp=R>0?shortRowGroups(aS,R/2).filter(x=>x>0):[], under=c.under!=='ne';
+    const items=[{a:null, text:`Prisiuvamas kraštas: nugara ${fmt(back.neckLen)} cm + 2 × ${fmt(jk.attach)} cm (iki įkirpos). Užmeskite ${n} ak. (${aS} + ${bS} + ${aS}).`, sts:n},
+      {a:1, b:rEnd, sub:'eil.', text:`Numegzkite ${hkEil(rEnd)} (${fmt(c.collarEnd)} cm – galų plotis).`, sts:n}];
+    if(R>0) items.push({a:rEnd+1, b:rEnd+R, sub:'trumposios eil.', text:`Trumposios eilės: kiekvienos eilės gale nemegzkite vis daugiau galų akių – po ${grp.join(', ')} (${H.shoulder==='vokiskos'?'vokiškos trumposios eilės':'w&t'}), kol liks mezgamos tik ${bS} nugaros ak. (${R} eil.). Tada numegzkite eilę per visas akis, pakeldami apvyniojimus.`});
+    items.push({a:null, text:'Išorinį kraštą uždarykite laisvai.'});
+    if(under) items.push({a:null, text:`Apatinė apykaklė – tokia pati, tik ${Math.max(1,rEnd-2)} eil. vietoje ${rEnd} (prielaida). Sudėkite išvirkščiomis pusėmis, susiūkite išorinį kraštą ir galus.`});
+    items.push({a:null, text:'Prisiūkite nuo vienos įkirpos per nugarą iki kitos.'});
+    return {title:'Apykaklė su įkirpa', secs:[{title:'Apykaklė su įkirpa', items}], stats:[[n,'užmesti akių'],[rEnd+R+1,'eilių']], warns:[], round:false}; },
+  jpockets(gk,pc){ const P=S.params[gk], G=hkG(), M=MACHINES[HK_M]||{needles:1e6,name:'',full:''}, R=EXTRA_SPECIAL.jpockets(P,pc,gk,{sts:G.sts,rows:G.rows,ribRows:G.ribRows},M,G.spc);
+    const tx=t=>t.replace(/pakabinkite ant adatų( \(išvirkščia puse į save\))?/g,'paimkite ant virbalo').replace(/Užmeskite (\d+) ak\./g,'Užmeskite $1 ak. ant virbalų');
+    return {title:pc.name, secs:R.sim.sections.map(s=>({title:s.title, items:s.items.map(i=>({a:null, text:tx(i.note)}))})), stats:R.sim.stats, warns:R.sim.warnings, round:false}; }
+};
+const HK_EXTRA_MAIN={ svarkas(gk,R,tech){ const pc=R.pc, P=S.params[gk], G=hkG(), out=[];
+  if(pc.kind==='body' && P.nugara.cbSeam==='taip') out.push({r:0, a:null, text:'Nugara su vidurio siūle: megzkite dvi veidrodines puses – kiekvienai užmeskite pusę akių + 1 siūlės akį; formuokite tik šono ir peties kraštą, vidurio kraštas tiesus. Kaklo iškirptėje uždarykite pusę vidurinių akių + siūlės akį.'});
+  const geom=R.geom; if(pc.kind!=='cfront'||!geom||!geom.jk) return out; const jk=geom.jk, rowOf=y=>Math.max(1,srnd(y*G.rpc));
+  tech.add('bo'); tech.add('co');
+  jkHoleSpots(geom,G.spc).forEach((h,i)=>{ let r=rowOf(h.y); const rs=!jk.mirror; if((r%2===1)!==rs) r++;
+    const d=Math.max(0, rs ? srnd((geom.R(h.y)-h.x2)*G.spc) : srnd((h.x1-geom.L(h.y))*G.spc));
+    out.push({r, a:r, sub:hkSub(r,{}), text:`${i+1}-oji sagos skylutė (${rs?'veidinė eilė, nuo dešiniojo krašto':'išvirkščia eilė, nuo kairiojo krašto žiūrint į veidinę pusę'}): numegzkite ${d} ak., ${h.k} ak. uždarykite; kitoje eilėje virš uždarytų užmeskite ${h.k} ak.`}); });
+  jkPocketSpots(P,geom,gk).filter(s=>s.type==='iterptos').forEach(s=>{ let r=rowOf(s.y); if(r%2===0) r++; const k=Math.max(2,srnd(s.W*G.spc)), d=Math.max(1,srnd((geom.R(s.y)-s.x2)*G.spc));
+    out.push({r, a:r, sub:hkSub(r,{}), text:`${s.kind==='breast'?'Krūtinės':'Apatinės'} kišenės anga (veidinė eilė): numegzkite ${d} ak., kitas ${k} ak. numegzkite pagalbiniu siūlu, grąžinkite jas ant kairiojo virbalo ir numegzkite pagrindiniu. Pamušalas ir apvadas – „Kišenės ir surinkimas“.`}); });
+  const rb=rowOf(jk.yb); out.push({r:rb, a:rb, sub:hkSub(rb,{}), text:`Atlapo lūžio taškas – pažymėkite kraštinę akį. ${jk.style==='smailus'?'Toliau krašte pridedamos akys – atlapas platėja.':'Toliau kraštas siaurėja iki peties (šalinė apykaklė).'}`});
+  return out; } };
 
 /* ================= SAVA FORMA (laisvos formos detalė) =================
    Detalės kraštas aprašomas taškais [y, x]: y – aukštis nuo apačios (cm), x – atstumas nuo vidurio
@@ -2553,7 +2889,7 @@ function render(){
   <header class="top${start?'':' worksc'}">
     <div class="brand"><h1>${APP_NAME}</h1><span>${md==='masina'?`mezgimo mašinos pagalbininkė · mėginys ${g.sts} ak. × ${g.rows} eil. / 10 cm`:'mezgimo mašinos pagalbininkė'}</span></div>
     ${navModeHtml(!start)}
-    <a class="appswitch noprint" href="${standalone?'spalvos/':'https://imgroupeu-lgtm.github.io/silver-reed-pagalbininkas/spalvos/'}"${standalone?'':' target="_blank" rel="noopener"'}><span class="dots"><i style="background:#c0392b"></i><i style="background:#e6b422"></i><i style="background:#2e86c1"></i></span><span class="aw-long">Spalvų pagalbininkas</span><span class="aw-short">Spalvos</span> <b>→</b></a>
+    <a class="appswitch noprint" href="${standalone?'spalvos/':'https://imgroupeu-lgtm.github.io/silver-reed-pagalbininkas/spalvos/'}"${standalone?'':' target="_blank" rel="noopener"'}><span class="dots"><i style="background:#c0392b"></i><i style="background:#e6b422"></i><i style="background:#2e86c1"></i></span><span class="aw-long">Spalvų pagalbininkas</span><span class="aw-short" aria-hidden="true">Spalvos</span> <b aria-hidden="true">→</b></a>
     ${typeof langPicker==='function'?langPicker():''}${typeof licBadge==='function'?licBadge():''}
     ${md==='masina'?machHeader():''}
   </header>
@@ -3536,7 +3872,7 @@ const r1 = x=> Math.round(x*10)/10;
 const pos0 = v=> { const x=parseFloat(v); return x>0 ? x : 0; };
 function defaultCfg(){ return {who:'moteris', size:'M', fit:'klasik', ease:7.5, garment:'megztinis', arm:'isiuta', shoulder:'japon',
   neckShape:'apvali', collar:'juosta', neckFront:7, neckBack:2, below:15, dressBelow:55, rib:5, neckW:0, cuffW:0,
-  breakDepth:28, overlap:3, btnN:2, collarW:7, jacketExtra:8, inseam:0, rise:0, legHem:0,
+  breakDepth:0, overlap:3, btnN:2, collarW:7, jacketExtra:8, jklapel:'smailus', jklen:'klasik', jkwaist:'taip', jkpocket:'iterptos', jkbreast:'taip', jkSup:6, jkLayer:5, jkWaistY:0, lapelW:7.5, btnGap:10, inseam:0, rise:0, legHem:0,
   shawlShape:'stula', shawlA:0, shawlB:0,
   tunicBelow:0, robeBelow:0, wrap:0, boleroLen:0, skirtLen:0, hipDepth:0, skirtFlare:2, ponchoW:0, ponchoL:0, scarfW:0, scarfL:0,
   hatH:0, hatEase:-4, handEase:1, sockEase:-2, sockH:0, dartAuto:true, asize:{}, glove:{}, own:{}}; }
@@ -3566,7 +3902,8 @@ function buildFromCfg(cfg, sizeName, opt){
   if(ACC_KIND[gk]) return buildAcc(cfg, gk, accSel(cfg, ACC_KIND[gk], sizeName), kid, man, opt);
   let i=T.sizes.indexOf(sizeName); if(i<0) i=T.sizes.indexOf(cfg.size); if(i<0) i=Math.min(2,T.sizes.length-1);
   const {body, src}=cfgBody(cfg, i, T, opt.noOwn);
-  const ease=cfg.ease, f=(body.chest+ease)/body.chest;
+  // švarkas dėvimas ant kitų drabužių: prie pasirinkto laisvumo pridedama jkLayer (žr. JK_CFG_SRC)
+  const ease=cfg.ease + (gk==='svarkas' ? Math.max(0,+cfg.jkLayer||0) : 0), f=(body.chest+ease)/body.chest;
   const base={sizeIndex:i, sizeName:T.sizes[i], table:T.table, ease, body, src};
   if(gk==='kelnes') return Object.assign(base, buildTrousers(cfg, body, i, T, kid, man, ease, opt));
   if(gk==='sijonas') return Object.assign(base, buildSkirt(cfg, body, src, i, kid, ease));
@@ -3617,16 +3954,10 @@ function buildFromCfg(cfg, sizeName, opt){
     if(!(cfg.boleroLen>0)) assume.push(`Boleras baigiasi ${fmt(bl)} cm žemiau pažasties, jei neįrašėte savo.`);
     assume.push('Bolero iškirptė V – iki pažasties lygio; krašto juosta – ne platesnė kaip 2 cm apačioje.');
   }
+  let jkInfo=null;
+  if(gk==='svarkas') jkInfo=buildJacket(cfg, body, src, P, man, ease, bustW, toUnder, assume);
   if(gk==='svarkas'){
-    // švarkas: be juostų, ilgesnis, atlapai iki lūžio taško
-    const hipsW=r1((Math.max(body.hips,body.chest)+ease)/2);
-    if(man){
-      Object.assign(P.nugara,{ ribCm:0, hemW:hipsW, waistW:bustW, hemToWaist:0, waistToUnderarm:r1(Math.max(5,toUnder+cfg.jacketExtra)) });
-    } else {
-      Object.assign(P.nugara,{ ribCm:0, hemW:hipsW, waistW:r1((body.waist+ease)/2), hemToWaist:r1(Math.max(5,cfg.below+cfg.jacketExtra)), waistToUnderarm:r1(Math.max(3,body.backWaist-body.armhole)) });
-    }
-    Object.assign(P.priekis,{ neckShape:'V', neckD:cfg.breakDepth, overlap:cfg.overlap, btnN:cfg.btnN, bandW:0 });
-    P.atlapai.collarW=cfg.collarW;
+    // atskiras jacket blokas – buildJacket (žemiau)
   } else if(gk==='boleras'){
     Object.assign(P.priekis, { neckShape:'V', neckD:r1(P.nugara.armDepth+P.nugara.slope), bandW: kid?2:3, btnN:0 });
   } else if(gk!=='halatas') Object.assign(P.priekis, { neckShape:cfg.neckShape, neckD:cfg.neckFront });
@@ -3644,6 +3975,7 @@ function buildFromCfg(cfg, sizeName, opt){
     else if(P.rankove) ragTxt.push('Priekis nenuleistas: priekio iškirptė ne gilesnė už nugaros – priekio ir nugaros reglano linijos vienodos.');
     rag = Object.assign({}, rag||{}, {text:ragTxt, drop:n.ragDrop});
   }
+  if(jkInfo) jkFinalize(cfg, P, jkInfo);
   if(gk==='kardiganas') Object.assign(P.priekis, { bandW: kid?2.5:3, btnN: kid?5:6 });
   if(gk==='liemeneU') Object.assign(P.priekis, { bandW: kid?2.5:3, btnN: kid?4:5 });
   if(P.rankiai) P.rankiai.height = kid?2:2.5;
@@ -3656,10 +3988,15 @@ function buildFromCfg(cfg, sizeName, opt){
     if(!(cfg.cuffW>0) && body.wrist>0) cuffW = r1(Math.min(upperW, Math.max(body.wrist+2, body.wrist*f*(gk==='halatas'?1.5:1))));
     Object.assign(P.rankove, { upperW, cuffW, length:r1(Math.max(5,body.arm-sRib)), ribCm:sRib, capTop: kid?5:8 });
   }
-  if(P.apykakle){ const c=COLLARS.find(x=>x[0]===cfg.collar)||COLLARS[0]; Object.assign(P.apykakle,{type:c[0], height: kid? r1(c[2]*0.7) : c[2]}); }
+  if(P.apykakle && gk!=='svarkas'){ const c=COLLARS.find(x=>x[0]===cfg.collar)||COLLARS[0]; Object.assign(P.apykakle,{type:c[0], height: kid? r1(c[2]*0.7) : c[2]}); }
   if(P.juostos) P.juostos.neckbandH = kid?2:3;
   // rankovės viršų suderiname su iškarpa
-  if(P.rankove && arm==='isiuta'){ const h=fitCapP(P); if(h) P.rankove.capH=h; }
+  if(P.rankove && arm==='isiuta'){ let h=fitCapP(P);
+    // švarkas (didesnis laisvumas): jei rankovė per plati iškarpai, siaurinamas rankovės viršus (iki 3 cm), kad kraštai sutaptų
+    if(!h && gk==='svarkas'){ const t0=P.rankove.capTop; for(let t=t0-1; t>=3 && !h; t--){ P.rankove.capTop=t; h=fitCapP(P); } if(h) assume.push(`Rankovės viršaus plotis sumažintas iki ${fmt(P.rankove.capTop)} cm, kad rankovės viršus sutaptų su iškarpa.`);
+      else { P.rankove.capTop=t0; const u0=P.rankove.upperW, uMin=body.upper+2; for(let u=u0-0.5; u>=uMin && !h; u-=0.5){ P.rankove.upperW=r1(u); P.rankove.cuffW=r1(Math.min(P.rankove.cuffW,P.rankove.upperW)); h=fitCapP(P); }
+        if(h) assume.push(`Rankovė ties pažastimi susiaurinta iki ${fmt(P.rankove.upperW)} cm (žastas + ${fmt(P.rankove.upperW-body.upper)} cm), kad jos viršus sutaptų su iškarpa.`); else P.rankove.upperW=u0; } }
+    if(h) P.rankove.capH=h; }
   if(CFG_NOSLEEVE.includes(gk)){ assume.push('Liemenės iškarpa 2 cm gilesnė už kūno iškarpos gylį.'); if(arm!==cfg.arm) notes.push('Liemenei reglanas netinka – naudojama įsiūtos rankovės iškarpa.'); }
   if(P.rankove && body.wrist>0 && !(cfg.cuffW>0)) assume.push('Rankogalis apskaičiuotas iš jūsų riešo apimties (+ tas pats laisvumo procentas, bent +2 cm).');
   if(man) notes.push('Vyrų lentelėje „Back Waist Length“ reikšmės (pvz. S – 58,5–61 cm) atitinka ilgį iki klubų, todėl papildomas ilgis žemiau liemens nepridedamas.');
@@ -3679,6 +4016,7 @@ function buildFromCfg(cfg, sizeName, opt){
       ['Žastas', body.upper, src.upper, `rankovė ${fmt(R.upperW)}`]]:[]),
     ...(R&&body.wrist>0?[['Riešas', body.wrist, src.wrist, `rankogalis ${fmt(R.cuffW)}`]]:[]),
     ...((gk==='suknele'||(gk==='svarkas'&&!man))?[['Liemuo',body.waist,src.waist,`${fmt(n.waistW*2)} (detalė ${fmt(n.waistW)})`],['Klubai',body.hips,src.hips,`apačia ${fmt(n.hemW*2)} (detalė ${fmt(n.hemW)})`]]:[]),
+    ...(jkInfo?jkInfo.rows:[]),
     ...((gk==='tunika'||gk==='halatas')?[['Klubai',body.hips,src.hips,`apačia ${fmt(n.hemW*2)} (detalė ${fmt(n.hemW)})`]]:[]),
     ...(gk==='halatas'?[['Užlaida', null, cfg.wrap>0?'jūsų':'prielaida', fmt(P.priekis.overlap)],['Diržas', null, 'prielaida', `${fmt(P.dirzas.w)} × ${fmt(P.dirzas.len)}`]]:[]),
     ...(rag&&rag.ok?[['Reglano linijos ilgis', rag.L, 'jūsų', `aukštis ${fmt(n.armDepth)} (įstrižai, horizontaliai ${fmt(rag.run)})`]]:[]),
@@ -3686,6 +4024,56 @@ function buildFromCfg(cfg, sizeName, opt){
   ];
   return Object.assign(base, {gk, params:P, rows, assume, notes, sweater:true, dart, rag});
 }
+/* ---------- ŠVARKAS ----------
+   Šaltiniai (JK_CFG_SRC): laisvumas – CYC „Loose fit … 4" to 6" (10 to 15cm)“ (https://craftyarncouncil.com/standards/body-sizing);
+   viršutiniams drabužiams (paltams, švarkams) dedama daugiau laisvumo, kad tilptų sluoksniai (Knotions „Understanding Ease“,
+   https://knotions.com/learn-understanding-ease/). Todėl prie pasirinktos kategorijos pridedama jkLayer = 5 cm – tiek skiriasi CYC
+   „Classic“ (5–10 cm) ir „Loose“ (10–15 cm) vidurkiai; pvz. „Klasikinis“ 7,5 + 5 = 12,5 cm = „Loose“ vidurys. Redaguojama.
+   Sagos: viršutinė (1–2 sagų) arba vidurinė (3 sagų) – ties natūraliu liemeniu (Wikipedia „Suit jacket“; samtalksstyle.com).
+   Ilgis: „klasik“ – uždengia sėdmenis (Permanent Style) – CYC vyrų nugaros ilgis (iki klubų, CYC „back hip length“) + jacketExtra (8 cm – prielaida);
+   „klubai“ – tik iki klubų. Vyrų liemens linija CYC lentelėje nenurodyta – numatyta 18 cm žemiau pažasties (PRIELAIDA, jkWaistY keičia).
+   Liemens susiaurinimas – jkSup cm iš viso (6 cm – PRIELAIDA), ne mažiau nei kūno liemuo + laisvumas.
+   Kišenės anga – 65 % atstumo nuo apačios iki liemens (PRIELAIDA), gylis ne didesnis už angos aukštį − 3 cm. */
+const JK_CFG_SRC=[['CYC Body Sizing (laisvumas)','https://craftyarncouncil.com/standards/body-sizing'],['Knotions – Understanding Ease','https://knotions.com/learn-understanding-ease/'],
+  ['Wikipedia – Suit jacket','https://en.wikipedia.org/wiki/Suit_jacket'],['Sam Talks Style – Button Stance','https://samtalksstyle.com/2019/11/05/jacket-button-stance-what-is-it-and-why-is-it-important/'],
+  ['Permanent Style – jacket length','https://www.permanentstyle.com/2020/03/video-how-long-should-a-jacket-be.html'],['fabrics-store.com – Notched Collar','https://blog.fabrics-store.com/?p=13206'],
+  ['Knit Picks – Fogarty Creek Blazer','https://knitpicks.com/fogarty-creek-blazer/p/51044D'],['Tin Can Knits – Pocket Power','https://blog.tincanknits.com/2021/07/15/pocket-power-how-to-add-pockets-to-any-sweater-you-like/']];
+const JK_WAIST_BELOW_ARM_MAN=18;
+function buildJacket(cfg, body, src, P, man, ease, bustW, toUnder, assume){
+  const n=P.nugara, lenX=cfg.jklen==='klubai'?0:Math.max(0,+cfg.jacketExtra||0);
+  const hipsW=r1((Math.max(body.hips,body.chest)+ease)/2);
+  const total=r1(Math.max(12, man ? toUnder+lenX : body.backWaist-body.armhole+Math.max(0,cfg.below)+lenX));
+  const wB0=cfg.jkWaistY>0 ? +cfg.jkWaistY : (man ? JK_WAIST_BELOW_ARM_MAN : r1(Math.max(5, body.backWaist-body.armhole)));
+  const wB=r1(Math.min(wB0, total-6)), yWaist=r1(total-wB);
+  const sup=cfg.jkwaist==='ne' ? 0 : Math.max(0,+cfg.jkSup||0), wMin=r1((body.waist+ease)/2);
+  const waistW=sup>0 ? r1(Math.min(bustW, Math.max(wMin, bustW-sup/2))) : bustW;
+  Object.assign(n,{ ribCm:0, hemW:hipsW, waistW, hemToWaist: waistW<bustW ? yWaist : 0, waistToUnderarm: waistW<bustW ? wB : total, cbSeam:n.cbSeam||'ne' });
+  const btnN=Math.max(1,Math.min(3,Math.round(+cfg.btnN||2))), gap=Math.max(4,+cfg.btnGap||10);
+  const yTop=r1(yWaist+(btnN>=3?gap:0));
+  const ov=+cfg.overlap>0 ? +cfg.overlap : 3;
+  Object.assign(P.priekis,{ neckShape:'V', overlap:ov, btnN, btnGap:gap, bandW:0, lapel:cfg.jklapel==='saline'?'saline':'smailus',
+    lapelW:+cfg.lapelW>0?+cfg.lapelW:7.5, holes:man?'kaire':'desine' });
+  if(P.atlapai) P.atlapai.collarW=cfg.collarW;
+  if(P.apykakle && 'collarEnd' in P.apykakle) Object.assign(P.apykakle,{collarW:cfg.collarW, collarEnd:r1(Math.max(2,Math.min(cfg.collarW, cfg.collarW-2)))});
+  const pY=r1(Math.max(6, yWaist*0.65));
+  if(P.kisenes) Object.assign(P.kisenes,{ type:['iterptos','uzsiuvamos','ne'].includes(cfg.jkpocket)?cfg.jkpocket:'iterptos', breast:cfg.jkbreast==='ne'?'ne':'taip',
+    pocketY:pY, pocketH:r1(Math.max(6,Math.min(15,pY-3))) });
+  if(!(cfg.jkWaistY>0)) assume.push(man ? `Švarkas: liemens linija (viršutinė saga) – ${fmt(wB)} cm žemiau pažasties. CYC vyrų lentelėje liemens aukščio nėra – tai prielaida; įrašykite savo „Liemuo žemiau pažasties“.`
+    : `Švarkas: liemens linija – ${fmt(wB)} cm žemiau pažasties (CYC nugaros ilgis iki liemens − iškarpos gylis).`);
+  assume.push(`Švarkas dėvimas ant kitų drabužių: prie pasirinkto laisvumo pridėta ${fmt(Math.max(0,+cfg.jkLayer||0))} cm (CYC „Loose fit“ 10–15 cm; Knotions – viršutiniams drabužiams reikia daugiau laisvumo).`);
+  assume.push(cfg.jklen==='klubai' ? 'Švarko ilgis – iki klubų (CYC nugaros ilgis).' : `Švarko ilgis – uždengia sėdmenis: ${man?'CYC nugaros ilgis (iki klubų)':'iki klubų'} + ${fmt(lenX)} cm (prielaida; Permanent Style: švarkas turi uždengti sėdmenis).`);
+  if(sup>0) assume.push(`Liemuo susiaurintas iš viso ${fmt(2*(bustW-waistW))} cm (nustatyta ${fmt(sup)} cm – prielaida), ne siauriau nei kūno liemuo + laisvumas.`);
+  assume.push(`Sagos: ${btnN} vnt. kas ${fmt(gap)} cm (prielaida; 9–12 cm siuvamuose švarkuose), ${btnN>=3?'vidurinė':'viršutinė'} – ties liemeniu (Wikipedia „Suit jacket“); ${man?'skylutės kairiajame priekyje':'skylutės dešiniajame priekyje'}.`);
+  assume.push(`Atlapas ${cfg.jklapel==='saline'?'– šalinė apykaklė':`${fmt(P.priekis.lapelW)} cm, apykaklė nugaroje ${fmt(cfg.collarW)} cm (fabrics-store.com: ~3″ ir 2¾″)`}; lūžio linijos stovelis 2 cm ir atlapo smaigalys 9 cm žemiau peties – prielaidos (keičiamos detalėje „Priekis“).`);
+  if(P.kisenes && P.kisenes.type!=='ne') assume.push(`Kišenių anga ${fmt(pY)} cm nuo apačios (65 % iki liemens), gylis ${fmt(P.kisenes.pocketH)} cm – prielaidos.`);
+  return {man, yWaist, yTop, btnN, gap, wB, total, rows:[['Liemens linija (sagos)', null, cfg.jkWaistY>0?'jūsų':(man?'prielaida':'CYC'), `${fmt(yWaist)} nuo apačios`],
+    ['Švarko ilgis iki pažasties', null, cfg.jklen==='klubai'?'CYC':'prielaida', fmt(total)]]};
+}
+function jkFinalize(cfg, P, info){ const n=P.nugara; let H;
+  try{ H=bodyBase(n,'svarkas',0).H; }catch(e){ H=info.total+n.armDepth+n.slope; }
+  const nd = cfg.breakDepth>0 ? +cfg.breakDepth : r1(H-info.yTop);
+  P.priekis.neckD=r1(Math.max(8, Math.min(H-6, nd)));
+  info.rows.push(['Atlapo lūžis (viršutinė saga)', null, cfg.breakDepth>0?'jūsų':(info.man?'prielaida':'CYC'), `${fmt(P.priekis.neckD)} nuo peties`]); }
 // Kelnės: plotis iš CYC juosmens ir klubų + laisvumas; ilgius įveda naudotojas.
 // Prielaidos (pažymėtos programoje): priekis 47 %, nugara 53 % pusės klubų apimties; tarpkojo išsikišimas priekyje 4 %, nugaroje 8 % klubų apimties.
 function buildTrousers(cfg, body, i, T, kid, man, ease, opt){
@@ -3882,20 +4270,20 @@ function viewKonfig(){
     const ragSel = isRaglan(armVal) ? `<label class="f" for="k-armRag">Reglano linija<span class="in"><select id="k-armRag" data-k="arm">${ARMTYPES.filter(a=>isRaglan(a[0])).map(([v,t])=>`<option value="${v}" ${armVal===v?'selected':''}>${t}${v==='reglanasA'?' (numatytas)':''}</option>`).join('')}</select></span></label>` : '';
     const ragHtml = B.rag ? `<div class="out" id="kRagTxt" style="margin-top:8px">${B.rag.text.map(esc).join('<br>')}${pos0(c.own.ragLen)?'':'<br>Tikslesniam reglano aukščiui įrašykite „Reglano linijos ilgį“ skiltyje „Savo matmenys“.'}</div>
      <p class="note">Reglano taisyklės ir šaltiniai: ${RAG_SRC.map(([t,u])=>`<a href="${u}" target="_blank" rel="noopener">${esc(t)}</a>`).join('; ')}.</p>` : '';
-    const neckOk = !['svarkas','halatas','boleras'].includes(gk), collarOk=!!P.apykakle;
+    const neckOk = !['svarkas','halatas','boleras'].includes(gk), collarOk=!!P.apykakle&&gk!=='svarkas';
     modelHtml=`<h3>Modelis</h3>
      <div class="fields">
        ${sel('arm',CFG_NOSLEEVE.includes(gk)?'Rankos anga':'Rankovė',armOpts,armMain)}${ragSel}
        ${isRaglan(armVal)?'':sel('shoulder','Petys',SHOULDERS.map(s=>[s[0],s[1].replace(/ \(.*\)/,'')]),c.shoulder)}
        ${neckOk?sel('neckShape','Iškirptė',NECKS,c.neckShape):''}
        ${collarOk?sel('collar','Kaklas',[['juosta','Mažas (juosta)'],['pusgolfis','Pusiau aukštas (pusgolfis)'],['golfas','Aukštas (golfas)']],c.collar):''}
-       ${gk==='svarkas'? num('btnN','Sagų skaičius','vnt.',c.btnN)+num('overlap','Užlaida sagoms','cm',c.overlap,'≈3 – viena sagų eilė, ≈7 – dvi') : ''}
+       ${gk==='svarkas'? sel('jklapel','Atlapas',[['smailus','Su įkirpa (klasikinis)'],['saline','Šalinė apykaklė']],c.jklapel)+sel('btnN','Sagų skaičius',[['1','1'],['2','2'],['3','3']],Math.max(1,Math.min(3,Math.round(+c.btnN||2))))+sel('jklen','Ilgis',[['klasik','Uždengia sėdmenis'],['klubai','Iki klubų']],c.jklen)+sel('jkwaist','Liemuo',[['taip','Šiek tiek susiaurintas'],['ne','Tiesus']],c.jkwaist)+sel('jkpocket','Kišenės',[['iterptos','Įmegztos su pamušalu'],['uzsiuvamos','Užsiuvamos'],['ne','Be kišenių']],c.jkpocket)+sel('jkbreast','Krūtinės kišenė',[['taip','Taip'],['ne','Ne']],c.jkbreast)+num('overlap','Užlaida sagoms','cm',c.overlap,'Bent sagos skersmuo + 0,6 cm') : ''}
        ${gk==='halatas'? num('wrap','Užlaida susiaučiant','cm',c.wrap,'0 – automatiškai')+num('robeBelow',man?'Ilgis žemiau klubų':'Ilgis žemiau liemens','cm',c.robeBelow,'0 – automatiškai') : ''}
        ${gk==='tunika'? num('tunicBelow','Ilgis žemiau liemens','cm',c.tunicBelow,'0 – automatiškai') : ''}
        ${gk==='boleras'? num('boleroLen','Ilgis žemiau pažasties','cm',c.boleroLen,'0 – automatiškai') : ''}
      </div>${ragHtml}
      <details class="grp" data-id="k/more" ${S.open['k/more']?'open':''}><summary>Matmenų patikslinimai</summary><div class="fields">
-       ${gk==='svarkas'? num('breakDepth','Atlapo lūžis nuo peties','cm',c.breakDepth,'Iki viršutinės sagos')+num('collarW','Apykaklės plotis','cm',c.collarW)+num('jacketExtra','Švarkas ilgesnis per','cm',c.jacketExtra) : neckOk ? num('neckFront','Iškirptės gylis priekyje','cm',c.neckFront) : ''}
+       ${gk==='svarkas'? num('jkLayer','Papildomas laisvumas','cm',c.jkLayer,'Dėvima ant kitų drabužių. 5 cm – prielaida')+num('jkWaistY','Liemuo žemiau pažasties','cm',c.jkWaistY,'0 – automatiškai')+num('jkSup','Liemens susiaurinimas','cm',c.jkSup,'Iš viso, visoje apimtyje. Prielaida 6 cm')+num('breakDepth','Atlapo lūžis nuo peties','cm',c.breakDepth,'0 – pagal liemenį (viršutinė saga)')+num('btnGap','Tarpas tarp sagų','cm',c.btnGap)+num('lapelW','Atlapo plotis','cm',c.lapelW)+num('collarW','Apykaklės plotis','cm',c.collarW)+num('jacketExtra','Ilgis žemiau klubų','cm',c.jacketExtra,'Kai ilgis „Uždengia sėdmenis“') : neckOk ? num('neckFront','Iškirptės gylis priekyje','cm',c.neckFront) : ''}
        ${num('neckBack','Iškirptės gylis nugaroje','cm',c.neckBack)}
        ${num('neckW','Iškirptės plotis','cm',c.neckW,'0 – automatiškai')}
        ${['svarkas','halatas'].includes(gk)?'':num('rib','Juostų aukštis','cm',c.rib)}
@@ -3953,7 +4341,7 @@ function viewKonfig(){
        ${B.sweater?`<li>Iškirptės plotis = ⅓ nugaros pločio tarp pečių, jei neįrašėte savo.</li>
        <li>Iškarpos gylis = kūno iškarpos gylis; peties nuolydis ${kid?'1,5':'2,5'} cm${P.rankove?'; rankogalis = 60 % rankovės pločio, jei neįrašėte savo':''}.</li>
        ${P.rankove?'<li>Rankovės plotis padidintas tiek pat procentų, kiek krūtinė.</li>':''}`:''}
-       ${B.gk==='svarkas'?'<li>Švarkas: apačia pagal klubus + laisvumą, be juostų, rankogalis = 75 % rankovės pločio; atlapo lūžis, užlaida ir apykaklės plotis – jūsų pasirinkimas.</li>':''}
+       ${B.gk==='svarkas'?`<li>Švarkas: apačia pagal klubus + laisvumą, be juostų, rankogalis = 75 % rankovės pločio. Šaltiniai: ${JK_CFG_SRC.map(([t,u])=>`<a href="${u}" target="_blank" rel="noopener">${esc(t)}</a>`).join('; ')}.</li>`:''}
        ${(B.assume||[]).map(x=>`<li>${esc(x)}</li>`).join('')}
        ${B.notes.map(x=>`<li>${esc(x)}</li>`).join('')}
      </ul>
@@ -4292,6 +4680,17 @@ async function aiAnalyze(){
 let aiResult=null, aiBusy=false, aiErr='';
 
 /* --- vaizdas --- */
+// Po „Paversti schema“ ir bibliotekos rašto pasirinkimo – schema parodoma (telefone ji ~3–4 tūkst. px žemiau).
+// Sklandžiai, nebent vartotojas nori mažiau judesio (prefers-reduced-motion); lipni žingsnių juosta – per scroll-margin-top.
+// Taikinys – spalvų / ženklų eilutė virš schemos (matosi paletė, įrankių juosta ir schema); jei schema jau gerai matoma – neslenkama.
+function patScrollToChart(){ let el=document.getElementById('pPaintRow')||document.getElementById('pRes'), box=document.getElementById('pChartBox'); if(!el||!el.scrollIntoView) return;
+  let rm=false; try{ rm=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(e){}
+  const nav=document.querySelector('nav.tabs.steps'); let off=12; try{ if(nav&&getComputedStyle(nav).position==='sticky') off+=nav.getBoundingClientRect().height; }catch(e){}
+  try{ const r=box&&box.getBoundingClientRect(), vh=window.innerHeight||800; if(r&&r.top>=off&&r.top<vh*0.55&&el.getBoundingClientRect().top>=off) return;
+    // atidarytas įrankių skydelis gali nustumti schemą už ekrano – tada taikomės į skydelį arba pačią schemą
+    if(r&&r.top-el.getBoundingClientRect().top>vh*0.6){ const t=document.querySelector('details[data-id="ed/tools"]'); el=(t&&r.top-t.getBoundingClientRect().top<=vh*0.6)?t:box; } }catch(e){}
+  el.style.scrollMarginTop=Math.round(off)+'px';
+  try{ el.scrollIntoView({behavior:rm?'auto':'smooth', block:'start'}); }catch(e){ try{ el.scrollIntoView(true); }catch(e2){} } }
 function viewRastai(){
   const p=patState(), m=MACHINES[S.machine], g=S.gauges[S.machine], PM=patMach(m), CW=PM.CW, EL=PM.EL, yp=yarnPalette(), ai=aiCfg();
   if(typeof navPatDefaults==='function') navPatDefaults(p);
@@ -4357,10 +4756,10 @@ function viewRastai(){
 
    <section class="panel" id="pRes">
      <div class="row" style="justify-content:space-between"><h2 style="margin:0">3. Schema ${p.W} ak. × ${p.H} eil. ${typeof patCheckBadge==='function'?patCheckBadge(p):''}</h2>
-       <div class="row noprint"><button class="btn" id="pPrint">Spausdinti</button><a class="btn" id="pPng" download="rastas.png" href="#">PNG</a>${typeof patExportBtns==='function'?patExportBtns(p):''}</div></div>
+       <div class="row noprint pexp"><button class="btn" id="pPrint">Spausdinti</button><a class="btn" id="pPng" download="rastas.png" href="#">PNG</a>${typeof patExportBtns==='function'?patExportBtns(p):''}</div></div>
      ${typeof patExportOpts==='function'?patExportOpts(p):''}
      <p class="note">Skaitykite iš apačios: 1-oji eilė apačioje, akys numeruojamos iš dešinės. Bakstelėkite langelį – jis nusidažys pasirinkta spalva${typeof patEditToolbar==='function'?' (kiti įrankiai – juostoje virš schemos)':''}.</p>
-     <div class="row noprint" style="margin-bottom:8px">${TX&&T.palette? patPaletteHtml(p,T) : TX? T.states.map((s,i)=>(T.handStates||[]).includes(i)?'':`<button class="btn" data-paint="${i}" aria-pressed="${p.paint===i}" style="${p.paint===i?'outline:3px solid var(--accent);':''}display:inline-flex;gap:6px;align-items:center"><span style="display:inline-block;width:18px;height:18px;border:1px solid var(--line);background:${TXCOL[i]};text-align:center;line-height:16px;color:#123;font-weight:700">${i?s[1]:''}</span> ${s[0]}</button>`).join('') : p.colors.map((c,i)=>`<button class="btn" data-paint="${i}" aria-pressed="${p.paint===i}" style="${p.paint===i?'outline:3px solid var(--accent);':''}display:inline-flex;gap:6px;align-items:center">${sw(i)} ${PSYM[i]||''} ${cname(i)}</button><input type="color" data-recol="${i}" value="${p.colors[i]}" aria-label="Keisti spalvą ${i+1}" style="width:34px;height:34px;border:0;background:none">`).join('')}
+     <div class="row noprint" id="pPaintRow" style="margin-bottom:8px">${TX&&T.palette? patPaletteHtml(p,T) : TX? T.states.map((s,i)=>(T.handStates||[]).includes(i)?'':`<button class="btn" data-paint="${i}" aria-pressed="${p.paint===i}" style="${p.paint===i?'outline:3px solid var(--accent);':''}display:inline-flex;gap:6px;align-items:center"><span style="display:inline-block;width:18px;height:18px;border:1px solid var(--line);background:${TXCOL[i]};text-align:center;line-height:16px;color:#123;font-weight:700">${i?s[1]:''}</span> ${s[0]}</button>`).join('') : p.colors.map((c,i)=>`<button class="btn" data-paint="${i}" aria-pressed="${p.paint===i}" style="${p.paint===i?'outline:3px solid var(--accent);':''}display:inline-flex;gap:6px;align-items:center">${sw(i)} ${PSYM[i]||''} ${cname(i)}</button><input type="color" data-recol="${i}" value="${p.colors[i]}" aria-label="Keisti spalvą ${i+1}" style="width:34px;height:34px;border:0;background:none">`).join('')}
        ${TX?'':(p.colors.length<8?'<button class="btn" id="pAddC">+ spalva</button>':'')}
        ${TX?'':`<label class="note"><input type="checkbox" id="pSym" ${p.sym?'checked':''}> simboliai</label>`}</div>
      ${p.libNote?`<div class="out" style="margin-bottom:8px"><b>${esc(p.libName||'')}:</b> ${esc(p.libNote)}</div>`:''}
@@ -4428,7 +4827,7 @@ function viewRastai(){
   $('#pK').onchange=e=>{ p.k=Math.max(2,Math.min(8,parseInt(e.target.value)||2)); save(); };
   $('#pPal').onchange=e=>{ p.usePal=e.target.value==='1'; save(); };
   if($('#pMax2')) $('#pMax2').onchange=e=>{ p.max2=e.target.checked; if(p.max2) patLimit2(p); rer(); };
-  $('#pConv').onclick=()=>{ const msg=patConvert(); if(msg) $('#pMsg').textContent=msg; else viewRastai(); };
+  $('#pConv').onclick=()=>{ const msg=patConvert(); if(msg) $('#pMsg').textContent=msg; else { viewRastai(); patScrollToChart(); } };
   document.querySelectorAll('[data-paint]').forEach(b=>b.onclick=()=>{ p.paint=+b.dataset.paint; rer(); });
   document.querySelectorAll('[data-recol]').forEach(i=>i.onchange=()=>{ p.colors[+i.dataset.recol]=i.value; if(p.colorNames) p.colorNames[+i.dataset.recol]=null; rer(); });
   const add=$('#pAddC'); if(add) add.onclick=()=>{ p.colors.push('#c0392b'); p.paint=p.colors.length-1; rer(); };
@@ -4450,7 +4849,7 @@ function viewRastai(){
   $('#pBand').onchange=e=>{ p.bandRows=Math.max(0,parseInt(e.target.value)||0); rer(); };
   const tsel=$('#pTech'); if(tsel) tsel.onchange=()=>{ const wasC=!isTX(p); p.tech=tsel.value; if(!(wasC&&!isTX(p))){ p.cells='0'.repeat(p.W*p.H); p.paint=1; } if(p.tech==='spalvos'&&p.colors.length<2) p.colors=['#f4efe6','#1d5c78']; rer(); };
   document.querySelectorAll('[data-jqback]').forEach(b=>b.onclick=()=>{ p.jqBack=b.dataset.jqback; rer(); });
-  document.querySelectorAll('[data-lib]').forEach(b=>b.onclick=()=>{ libApply(p,b.dataset.lib); viewRastai(); });
+  document.querySelectorAll('[data-lib]').forEach(b=>b.onclick=()=>{ libApply(p,b.dataset.lib); viewRastai(); patScrollToChart(); });
   document.querySelectorAll('#view details.grp[data-id^="lib/"]').forEach(d=>d.addEventListener('toggle',()=>{ S.open[d.dataset.id]=d.open; save(); }));
   // AI
   const det=document.querySelector('details[data-id="ai"]'); if(det) det.ontoggle=()=>{ S.open.ai=det.open; save(); };
@@ -4461,7 +4860,7 @@ function viewRastai(){
   const go=$('#aiGo'); if(go) go.onclick=async()=>{ if(aiBusy) return; aiBusy=true; aiErr=''; viewRastai();
     try{ aiResult=await aiAnalyze(); }catch(e){ aiErr='AI nepavyko: '+(e&&e.message||e)+(aiCfg().prov==='ollama'?' (ar Ollama paleista ir leidžia šią svetainę?)':''); }
     aiBusy=false; if(S.tab==='rastai') viewRastai(); };
-  const use=$('#aiUse'); if(use) use.onclick=()=>{ p.k=Math.min(8,Math.max(2,+aiResult.spalvu_skaicius||2)); const msg=patConvert(); if(msg) aiErr=msg; viewRastai(); };
+  const use=$('#aiUse'); if(use) use.onclick=()=>{ p.k=Math.min(8,Math.max(2,+aiResult.spalvu_skaicius||2)); const msg=patConvert(); if(msg) aiErr=msg; viewRastai(); if(!msg) patScrollToChart(); };
 }
 
 /* --- techninių raštų informacija --- */
@@ -5483,14 +5882,16 @@ function stampPanel(p){ const list=typeof patStamps==='function'?patStamps(p):[]
    ${cats.map(c=>`<div class="row" style="gap:5px;margin:4px 0;align-items:center"><span class="note" style="min-width:8em">${esc(c)}:</span>${list.filter(it=>it.cat===c).map(it=>`<button class="btn" data-stamp="${it.id}" aria-pressed="${!!(ED.stamp&&ED.stamp.id===it.id&&ED.tool==='stamp')}" title="${esc(it.name+(it.note?' – '+it.note:''))}">${esc(it.name)} <small>${it.w}×${it.h}</small>${it.hand?' <small style="color:var(--warn)">· tik rankomis</small>':''}</button>`).join('')}</div>`).join('')}
    <p class="note" style="margin:2px 0">Pasirinkite štampą ir bakstelėkite schemoje (viršutinis kairys kampas). 1-oji štampo eilė (apačioje) – kryžiaus eilė, aukščiau – akys po kryžiaus. ${p.forHand?'':'Mašinai kryžiai – iki 3/3 (dviem perkėlimo įrankiais); platesni ir gumbeliai pažymėti „tik rankomis“, patikra juos parodys.'}</p></details>`; }
 function css(){ if(document.getElementById('edCss')) return; const st=document.createElement('style'); st.id='edCss';
-  st.textContent='.edbar{display:flex;flex-direction:column;gap:6px;margin:0 0 8px}.edbar .btn{padding:6px 9px;font-size:.82rem;min-height:36px}.edbar .seg button{padding:6px 9px;font-size:.82rem;min-height:34px}.edbar .btn[disabled]{opacity:.45;cursor:default}.edbar select,.edbar input[type=number]{font:inherit;font-size:.84rem;padding:5px;border:1px solid var(--line);border-radius:6px;background:var(--sunk);color:var(--ink);max-width:100%}.edbar input[type=number]{width:68px}.edmsg{font-size:.84rem;color:var(--muted);min-height:1em}.edanc{display:inline-grid;grid-template-columns:repeat(3,26px);gap:2px}.edanc button{width:26px;height:26px;padding:0;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);cursor:pointer}.edanc button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}';
+  st.textContent='details.edtools{margin:0 0 8px}details.edtools>summary{min-height:44px;align-items:center;gap:8px;color:var(--ink);font-weight:700}details.edtools .edtools-cur{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)}details.edtools[open]>summary{margin-bottom:6px}.edbar{display:flex;flex-direction:column;gap:6px;margin:0}.edbar .btn{padding:6px 9px;font-size:.82rem;min-height:36px}.edbar .seg button{padding:6px 9px;font-size:.82rem;min-height:34px}.edbar .btn[disabled]{opacity:.45;cursor:default}.edbar select,.edbar input[type=number]{font:inherit;font-size:.84rem;padding:5px;border:1px solid var(--line);border-radius:6px;background:var(--sunk);color:var(--ink);max-width:100%}.edbar input[type=number]{width:68px}.edmsg{font-size:.84rem;color:var(--muted);min-height:1em}.edanc{display:inline-grid;grid-template-columns:repeat(3,26px);gap:2px}.edanc button{width:26px;height:26px;padding:0;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);cursor:pointer}.edanc button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}';
   document.head.appendChild(st); }
 window.patEditToolbar=function(p){ css(); const L=limits(p), n=nVals(p), sel=ED.sel?selRect(p):null;
   const opts=sel0=>Array.from({length:n},(_,i)=>i).map(i=>`<option value="${i}" ${i===sel0?'selected':''}>${esc(valName(p,i))}</option>`).join('');
   const cur=ED.cursor&&ED.cursor[0]<p.W&&ED.cursor[1]<p.H?ED.cursor:[p.W-1,0];
   const anc=ED.anchor||[1,2];
   const b=(id,txt,title,dis)=>`<button class="btn" id="${id}" title="${esc(title)}" aria-label="${esc(title)}" ${dis?'disabled':''}>${txt}</button>`;
-  return `<div class="edbar noprint" id="edBar">
+  const tl=TOOLS.find(t=>t[0]===ED.tool)||TOOLS[0];
+  return `<details class="grp edtools noprint" data-id="ed/tools" ${toolsOpen()?'open':''}><summary><span><span aria-hidden="true">✎</span> Piešimo ir redagavimo įrankiai <span class="edtools-cur">· ${tl[1]} ${esc(tl[2])}</span></span></summary>
+   <div class="edbar" id="edBar">
    <div class="seg" role="group" aria-label="Įrankiai">${TOOLS.map(([k,i,t])=>`<button data-edtool="${k}" aria-pressed="${ED.tool===k}" title="${esc(t)}" ${(k==='paste'&&!ED.clip)||(k==='stamp'&&!(ED.stamp&&ED.stamp.id))?'disabled':''}>${i} <span>${esc(t)}</span></button>`).join('')}</div>
    ${txtPanel(p)}
    <div class="row" style="gap:5px">${b('edUndo','↶','Atšaukti (Ctrl+Z)',!ED.hist.length)}${b('edRedo','↷','Grąžinti (Ctrl+Y)',!ED.fut.length)}
@@ -5511,7 +5912,9 @@ window.patEditToolbar=function(p){ css(); const L=limits(p), n=nVals(p), sel=ED.
     <div class="row" style="margin:6px 0;align-items:flex-start"><label class="note">Plotis <input type="number" id="edW" min="1" max="${L.maxW}" value="${p.W}"></label><label class="note">Aukštis <input type="number" id="edH" min="1" max="${L.maxH}" value="${p.H}"></label>
       <span class="note">Inkaras</span><div class="edanc" role="group" aria-label="Inkaras">${[0,1,2].map(ay=>[0,1,2].map(ax=>`<button data-edanc="${ax},${ay}" aria-pressed="${anc[0]===ax&&anc[1]===ay}" title="${['viršus','vidurys','apačia'][ay]} · ${['kairė','centras','dešinė'][ax]}">${anc[0]===ax&&anc[1]===ay?'●':''}</button>`).join('')).join('')}</div>${b('edResize','Keisti dydį','Keisti drobės dydį; esamas raštas lieka prie inkaro')}</div>
     <p class="note" style="margin:2px 0">${esc(L.why)}</p>
-   </details></div>`; };
+   </details></div></details>`; };
+// Įrankių skydelis: būsena S.open['ed/tools']; kol vartotojas nepasirinko – telefone (≤640 px) suskleistas, kad schema ir pagrindiniai veiksmai būtų arčiau viršaus.
+function toolsOpen(){ const o=S.open&&S.open['ed/tools']; if(typeof o==='boolean') return o; try{ return !(window.matchMedia&&window.matchMedia('(max-width:640px)').matches); }catch(e){ return true; } }
 
 /* ---------- piešimas ir perdanga ---------- */
 function geomCell(ev){ const cv=ED.cv, G=ED.opt&&ED.opt.geom, p=patState(); if(!cv||!G) return null; const r=cv.getBoundingClientRect(), sx=cv.width/r.width, sy=cv.height/r.height;
@@ -5593,6 +5996,7 @@ window.patEditBind=function(p,cv,box,opt){ ED.cv=cv; ED.opt=opt; ED.box=box;
   document.querySelectorAll('[data-edanc]').forEach(b=>b.onclick=()=>{ ED.anchor=b.dataset.edanc.split(',').map(Number); commit(); });
   on('edResize',()=>{ const a=ED.anchor||[1,2]; run('resize',gv('edW'),gv('edH'),a[0],a[1]); });
   const det=document.querySelector('details[data-id="ed/more"]'); if(det) det.ontoggle=()=>{ S.open=S.open||{}; S.open['ed/more']=det.open; try{ save(); }catch(e){} };
+  const dt=document.querySelector('details[data-id="ed/tools"]'); if(dt) dt.ontoggle=()=>{ if(dt.open===toolsOpen()) return; S.open=S.open||{}; S.open['ed/tools']=dt.open; try{ save(); }catch(e){} };
 };
 
 /* ---------- klaviatūra (kompiuteryje) ---------- */
@@ -6733,7 +7137,7 @@ function edgAssigned(gk, P){ return edgEdges(gk).map(key=>{ const v=edgGet(gk,ke
 function edgAttach(gk, key){ const G=GARMENTS[gk]; if(!G) return []; const P=G.pieces;
   if(key==='hem') return P.filter(p=>EDG_HEM_K.includes(p.kind)).map(p=>p.id);
   if(key==='cuff') return P.filter(p=>EDG_CUFF_K.includes(p.kind)).map(p=>p.id);
-  if(key==='neck'){ const c=P.find(p=>['collar','bands','hood','lapel'].includes(p.kind)) || P.find(p=>p.kind==='front') || P.find(p=>p.kind==='cfront'); return c?[c.id]:[]; }
+  if(key==='neck'){ const c=P.find(p=>['collar','bands','hood','lapel','jcollar'].includes(p.kind)) || P.find(p=>p.kind==='front') || P.find(p=>p.kind==='cfront'); return c?[c.id]:[]; }
   if(key==='band'){ const c=P.find(p=>['bands','lapel'].includes(p.kind)) || P.find(p=>p.kind==='cfront'); return c?[c.id]:[]; }
   if(key==='shawl'){ const c=P.find(p=>p.kind==='shawledge')||P[0]; return c?[c.id]:[]; }
   return []; }
@@ -7892,12 +8296,13 @@ function hkBuild(gk, pid){
   else if(round && pc.kind==='sleeve') res=hkSleeveRound(gk,pid,tech);
   else if(round && pc.kind==='skirt'){ res=hkSkirtRound(gk,tech); if(!res) note='Priekis ir nugara skiriasi – sijonas aprašytas plokščiai.'; }
   else if(round && pc.kind==='rect') res=hkRectRound(gk,pid,tech);
+  if(!res && typeof HK_EXTRA!=='undefined' && HK_EXTRA[pc.kind]) res=HK_EXTRA[pc.kind](gk,pc,tech); // papildomų gaminių detalės (garments2.js)
   if(!res) res=hkSpecial(gk,pc,tech);
   if(!res){
     const R=hkCompute(gk,pid);
     if(R.special){ res={title:pc.name, secs:[{title:pc.name, items:[{a:null, text:'Šiai detalei rankinio mezgimo aprašymo nėra.'}]}], stats:[], warns:[], round:false}; }
     else {
-      const extra = (pc.kind==='mitten'||pc.kind==='glovehand') ? hkPalmExtra(gk,R,tech) : [];
+      const extra = (pc.kind==='mitten'||pc.kind==='glovehand') ? hkPalmExtra(gk,R,tech) : (typeof HK_EXTRA_MAIN!=='undefined' && HK_EXTRA_MAIN[gk] ? HK_EXTRA_MAIN[gk](gk,R,tech) : []);
       const fl=hkFlat(R, gk, {extraMain:extra}, tech);
       const g=hkG();
       if(pc.kind==='rect'){ const p=S.params[gk][pc.param||pid]||{}; if(p.ribCm>0) fl.secs[fl.secs.length-1].items.splice(-1,0,{a:null, text:`Kitame gale – tokia pati juosta: ${srnd(p.ribCm*g.rrpc)} eil.`});
@@ -8984,7 +9389,7 @@ function wzFresh(){ return {step:1, max:1, mode:'', ribber:true, needle:'4 mm', 
   ny:{name:'', m100:0, skeinG:0, haveG:0}, fiber:'', spin:'', cone:'ne', micron:0,
   gm:'direct', sts:0, rows:0, mkW:0, mkH:0, swG:0, swW:0, swH:0, tension:'', example:false, swId:'',
   who:'moteris', garment:'megztinis', size:'M', fit:'klasik', own:clone((S.cfg&&S.cfg.own)||{}), ownOpen:false,
-  shShape:'stula', shA:0, shB:0, arm:'isiuta', shoulder:'japon', neckShape:'apvali', collar:'juosta', btnN:2, overlap:3, hm:'plokscia', sock:'virsus', thumb:'pleistas',
+  shShape:'stula', shA:0, shB:0, arm:'isiuta', shoulder:'japon', neckShape:'apvali', collar:'juosta', btnN:2, overlap:3, jklapel:'smailus', jklen:'klasik', jkwaist:'taip', jkpocket:'iterptos', hm:'plokscia', sock:'virsus', thumb:'pleistas',
   pat:'plain', lib:'', libExt:false, name:'', nameAuto:true, err:''}; }
 function wzState(){
   let w=S.wiz; if(!w||typeof w!=='object') w=S.wiz=wzFresh();
@@ -9005,7 +9410,7 @@ const wzR1=x=>Math.round(x*10)/10;
 const wzStash=()=>Array.isArray(S.stash)?S.stash.filter(y=>y&&typeof y==='object'):[];
 function wzCfg(w){
   const c=Object.assign(defaultCfg(), {who:w.who, garment:w.garment, fit:w.fit, ease:(FITS.find(f=>f[0]===w.fit)||FITS[2])[2],
-    arm:w.arm, shoulder:w.shoulder, neckShape:w.neckShape, collar:w.collar, btnN:wzNum(w.btnN)||0, overlap:wzNum(w.overlap)||0, own:{}, shawlShape:SHAWL_SHAPES[w.shShape]?w.shShape:'stula', shawlA:wzNum(w.shA), shawlB:wzNum(w.shB)});
+    arm:w.arm, shoulder:w.shoulder, neckShape:w.neckShape, collar:w.collar, btnN:wzNum(w.btnN)||0, overlap:wzNum(w.overlap)||0, jklapel:w.jklapel, jklen:w.jklen, jkwaist:w.jkwaist, jkpocket:w.jkpocket, own:{}, shawlShape:SHAWL_SHAPES[w.shShape]?w.shShape:'stula', shawlA:wzNum(w.shA), shawlB:wzNum(w.shB)});
   Object.keys(w.own||{}).forEach(k=>{ const v=wzNum(w.own[k]); if(v) c.own[k]=v; });
   if(S.cfg&&S.cfg.glove&&typeof S.cfg.glove==='object') c.glove=clone(S.cfg.glove);
   const kind=ACC_KIND[w.garment]; c.asize={}; if(kind) c.asize[kind]=w.size; else c.size=w.size;
@@ -9093,6 +9498,8 @@ const WZ_SVG=(()=>{ const s=(b)=>`<svg viewBox="0 0 64 64" aria-hidden="true" fi
     V:s(`<path d="M6 54 L6 18 L22 14 L32 40 L42 14 L58 18 L58 54"/>`),
     juosta:s(`<path d="M6 56 L6 34 L22 28 Q32 40 42 28 L58 34 L58 56"/><path d="M22 28 Q32 36 42 28 L42 24 Q32 31 22 24 Z"/>`),
     pusgolfis:s(`<path d="M6 56 L6 34 L22 28 Q32 36 42 28 L58 34 L58 56"/><path d="M22 28 L22 16 Q32 20 42 16 L42 28"/><path d="M22 16 Q32 12 42 16"/>`),
+    jk_smailus:s(`<path d="M14 56 L14 14 L26 8 L32 40 L38 8 L50 14 L50 56"/><path d="M26 8 L22 20 L27 21 L32 40 L37 21 L42 20 L38 8"/><circle cx="32" cy="46" r="1.6"/>`),
+    jk_saline:s(`<path d="M14 56 L14 14 L26 8 L32 40 L38 8 L50 14 L50 56"/><path d="M26 8 Q20 24 32 40 Q44 24 38 8"/><circle cx="32" cy="46" r="1.6"/>`),
     golfas:s(`<path d="M6 56 L6 36 L22 30 Q32 38 42 30 L58 36 L58 56"/><path d="M22 30 L21 6 Q32 10 43 6 L42 30"/><path d="M21 6 Q32 2 43 6"/><path d="M21.5 18 Q32 22 42.5 18" opacity=".55"/>`)
   }; })();
 
@@ -9195,8 +9602,13 @@ function wzStep4(w){
     if(!noSl&&isRaglan(w.arm)) parts.push(`<h3>Reglano linija</h3><div class="wz-cards">${ARMTYPES.filter(a=>isRaglan(a[0])).map(([v,t])=>wzCard('data-wrag',v,w.arm,esc(t.replace(/ reglanas$/,'')),v==='reglanasA'?'numatytas':'',WZ_SVG[v])).join('')}</div>`);
     if(!isRaglan(w.arm)) parts.push(`<h3>Petys</h3><div class="wz-cards">${SHOULDERS.map(s=>{ const m=s[1].match(/^(.*?) \((.*)\)$/); return wzCard('data-wset-shoulder',s[0],w.shoulder,esc(m?m[1]:s[1]),m?esc(m[2]):'',WZ_SVG[s[0]]); }).join('')}</div>`);
     if(!['svarkas','halatas','boleras'].includes(gk)) parts.push(`<h3>Iškirptė</h3><div class="wz-cards">${NECKS.map(n=>wzCard('data-wset-neckShape',n[0],w.neckShape,esc(n[1]),'',WZ_SVG[n[0]])).join('')}</div>`);
-    if(DEF[gk]&&DEF[gk].apykakle) parts.push(`<h3>Kaklas</h3><div class="wz-cards">${[['juosta','Mažas (juosta)'],['pusgolfis','Pusiau aukštas'],['golfas','Aukštas (golfas)']].map(c=>wzCard('data-wset-collar',c[0],w.collar,c[1],'',WZ_SVG[c[0]])).join('')}</div>`);
-    if(gk==='svarkas') parts.push(`<h3>Sagos</h3><div class="fields">${wzIn('btnN','Sagų skaičius','vnt.',w.btnN)}${wzIn('overlap','Užlaida sagoms','cm',w.overlap,'≈3 – viena sagų eilė, ≈7 – dvi')}</div>`);
+    if(DEF[gk]&&DEF[gk].apykakle&&gk!=='svarkas') parts.push(`<h3>Kaklas</h3><div class="wz-cards">${[['juosta','Mažas (juosta)'],['pusgolfis','Pusiau aukštas'],['golfas','Aukštas (golfas)']].map(c=>wzCard('data-wset-collar',c[0],w.collar,c[1],'',WZ_SVG[c[0]])).join('')}</div>`);
+    if(gk==='svarkas'){ // švarkas: atlapas, sagos (1–3), ilgis, liemuo, kišenės – kaip „Modelis“ (config.js)
+      parts.push(`<h3>Atlapas</h3><div class="wz-cards">${[['smailus','Su įkirpa','klasikinis'],['saline','Šalinė apykaklė','']].map(([v,t,sb])=>wzCard('data-wset-jklapel',v,w.jklapel,t,sb,WZ_SVG['jk_'+v])).join('')}</div>`);
+      parts.push(`<h3>Sagos</h3><div class="wz-cards">${['1','2','3'].map(v=>wzCard('data-wset-btnn',v,String(Math.max(1,Math.min(3,Math.round(wzNum(w.btnN)||2)))),v+' '+(v==='1'?'saga':'sagos'),v==='2'?'dažniausia':'')).join('')}</div><div class="fields" style="margin-top:12px">${wzIn('overlap','Užlaida sagoms','cm',w.overlap,'Bent sagos skersmuo + 0,6 cm')}</div>`);
+      parts.push(`<h3>Ilgis</h3><div class="wz-cards">${[['klasik','Uždengia sėdmenis'],['klubai','Iki klubų']].map(([v,t])=>wzCard('data-wset-jklen',v,w.jklen,t)).join('')}</div>`);
+      parts.push(`<h3>Liemuo</h3><div class="wz-cards">${[['taip','Šiek tiek susiaurintas'],['ne','Tiesus']].map(([v,t])=>wzCard('data-wset-jkwaist',v,w.jkwaist,t)).join('')}</div>`);
+      parts.push(`<h3>Kišenės</h3><div class="wz-cards">${[['iterptos','Įmegztos su pamušalu'],['uzsiuvamos','Užsiuvamos'],['ne','Be kišenių']].map(([v,t])=>wzCard('data-wset-jkpocket',v,w.jkpocket,t)).join('')}</div>`); }
     if(gk==='kardiganas'||gk==='liemeneU') parts.push(`<p class="note">Sagų juosta ir sagų skaičius nustatomi automatiškai – pakeisite „Detalėse“.</p>`);
   }
   if(w.mode==='hand'){
@@ -9321,7 +9733,7 @@ function wzBind(w){
   V.querySelectorAll('[data-wgk]').forEach(b=>b.onclick=()=>{ w.garment=b.dataset.wgk; w.size=''; w.err=''; rer(); });
   V.querySelectorAll('[data-wrag]').forEach(b=>b.onclick=()=>{ w.arm=b.dataset.wrag; w.err=''; rer(); });
   V.querySelectorAll('button[class~="wz-card"]').forEach(b=>{ const a=[...b.attributes].find(x=>x.name.startsWith('data-wset-')); if(!a) return;
-    b.onclick=()=>{ const k=a.name.slice('data-wset-'.length).replace(/-([a-z])/g,(m,c)=>c.toUpperCase()); const real={neckshape:'neckShape'}[k]||k; if(real==='arm'&&a.value==='reglanasA'&&isRaglan(w.arm)){ w.err=''; rer(); return; } w[real]=a.value; if(real==='pat'&&a.value!=='lib'){ w.libExt=false; } w.err=''; rer(); }; });
+    b.onclick=()=>{ const k=a.name.slice('data-wset-'.length).replace(/-([a-z])/g,(m,c)=>c.toUpperCase()); const real={neckshape:'neckShape', btnn:'btnN'}[k]||k; if(real==='arm'&&a.value==='reglanasA'&&isRaglan(w.arm)){ w.err=''; rer(); return; } w[real]=a.value; if(real==='pat'&&a.value!=='lib'){ w.libExt=false; } w.err=''; rer(); }; });
   V.querySelectorAll('[data-wysrc]').forEach(b=>b.onclick=()=>{ w.ysrc='new'; w.yid=''; w.err=''; rer(); });
   V.querySelectorAll('[data-wylater]').forEach(b=>b.onclick=()=>{ w.ysrc='later'; w.yid=''; w.err=''; const v=wzGv(w); if(!(v.sts>0&&v.rows>0)) w.example=true; rer(); });
   V.querySelectorAll('[data-wcraft]').forEach(b=>b.onclick=()=>{ const k=b.dataset.wcraft; w.err='';
@@ -10371,7 +10783,10 @@ function mkPieceCanvas(m, s, look){
   const kt=mkKnitTile(kx,ky), small=!(kx>=4&&ky>=3); c.fillStyle=small?c.createPattern(kt,'repeat'):mkPatFill(c,kt,xN(0),baseY,cw/kx,ch/ky); c.fillRect(0,0,W,baseY+0.5);
   if(m.rib){ c.fillStyle=mkPatFill(c, mkRibTile(Math.max(1,kx),Math.max(2,ky)), xN(0), baseY, cw/Math.max(1,kx), 1); c.fillRect(0,baseY,W,H-baseY); c.fillStyle='rgba(0,0,0,.10)'; c.fillRect(0,baseY,W,Math.max(1,s*0.12)); }
   if(look.dim) { c.fillStyle=`rgba(40,20,20,${look.dim})`; c.fillRect(0,0,W,H); }
-  c.restore(); return cv; }
+  c.restore();
+  // švarko sagos (lokaliomis cm nuo apatinio kairiojo kampo)
+  (look.btns||[]).forEach(([bx,by])=>{ const r=Math.max(2,0.9*s); c.fillStyle=look.btnHex||mkShade(main,-0.45); c.beginPath(); c.arc(1+bx*s,H-1-by*s,r,0,7); c.fill(); c.fillStyle='rgba(255,255,255,.35)'; c.beginPath(); c.arc(1+bx*s-r*0.3,H-1-by*s-r*0.3,r*0.35,0,7); c.fill(); });
+  return cv; }
 function mkMarlTile(a,b,kx,ky){ const key='marl|'+a+b+kx+ky; if(MK.tiles.has(key)) return MK.tiles.get(key); const cv=document.createElement('canvas'); cv.width=8*kx; cv.height=8*ky; const c=cv.getContext('2d'), rnd=mulberry(5);
   for(let y=0;y<8;y++) for(let x=0;x<8;x++){ c.fillStyle=rnd()<0.5?a:b; c.fillRect(x*kx,y*ky,kx,ky); } MK.tiles.set(key,cv); return cv; }
 function mkFlip(cv, fx, fy){ const o=document.createElement('canvas'); o.width=cv.width; o.height=cv.height; const c=o.getContext('2d'); c.translate(fx?cv.width:0, fy?cv.height:0); c.scale(fx?-1:1, fy?-1:1); c.drawImage(cv,0,0); return o; }
@@ -10385,6 +10800,26 @@ function mkArm(m, side, raglan){ // rankovės prisiuvimo taškai lokaliomis cm: 
   else { const cnt={}; ys.filter(y=>y>=top*0.62).forEach(y=>cnt[ext[y]]=(cnt[ext[y]]||0)+1); const v=+Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]||b-a)[0]; yA=Math.max(...ys.filter(y=>ext[y]===v)); }
   let y=yA, inc=false; while(y>1&&ext[y-1]!=null){ const a=ext[y-1], c=ext[y]; if(a>c){ inc=true; y--; } else if(a===c&&!inc) y--; else break; }
   return {A:pt(ext[yA],yA), B:(inc&&y>1)?pt(ext[y],y):null}; }
+/* Švarko priekis surinktame vaizde: atlapas atverstas per lūžio liniją (core.js jkFrontGeom: R.geom.jk).
+   Priekio eilės nukerpamos ties lūžio linija, atverstas atlapas (veidrodinis atspindys) piešiamas atskira detale; sagos – ant vidurio linijos. */
+function mkJkFold(R, m, g, cw){ const jk=R&&R.geom&&R.geom.jk; if(!jk||!m||!R.sim) return null;
+  const spc=g.sts/10, rpc=g.rows/10, sg=jk.mirror?-1:1, shift=R.sim.castOn.L-srnd(R.geom.L(0)*spc), nx=x=>srnd(sg*x*spc)+shift;
+  const B0=jk.B0, T=jk.T, rollX=y=>lerp(B0.x,T.x,(y-B0.y)/Math.max(0.1,T.y-B0.y));
+  m.rows=m.rows.filter(r=>{ const y=r.yr/rpc; if(y<=jk.yb) return true; const xr=nx(rollX(y)); if(sg>0) r.R=Math.min(r.R,xr); else r.L=Math.max(r.L,xr); return r.R>r.L; });
+  mkFinish(m); let lap=null;
+  let poly=null;
+  if(jk.style==='smailus' && jk.P){ const dx=T.x-B0.x, dy=T.y-B0.y, len=Math.hypot(dx,dy)||1, nX=dy/len, nY=-dx/len;
+    const refl=p=>{ const d=(p.x-B0.x)*nX+(p.y-B0.y)*nY; return {x:p.x-2*d*nX, y:p.y-2*d*nY}; };
+    poly=[B0, refl(jk.P), refl(jk.N), jk.Q]; }
+  else if(jk.style==='saline'){ const NP={x:jk.xnp,y:jk.H}, dx=NP.x-B0.x, dy=NP.y-B0.y, len=Math.hypot(dx,dy)||1, w=Math.max(1,cw||7); // atversta šalinė apykaklė priekyje
+    poly=[B0, NP, {x:NP.x-w*dy/len, y:NP.y+w*dx/len}]; }
+  if(poly){ const ys=poly.map(p=>p.y), y0=Math.min(...ys), y1=Math.max(...ys), rows=[];
+    for(let yr=Math.ceil(y0*rpc); yr<=Math.floor(y1*rpc); yr++){ const y=yr/rpc, xs=[];
+      for(let i=0;i<poly.length;i++){ const a=poly[i], b=poly[(i+1)%poly.length]; if((a.y<=y&&b.y>y)||(b.y<=y&&a.y>y)) xs.push(a.x+(b.x-a.x)*(y-a.y)/(b.y-a.y)); }
+      if(xs.length<2) continue; const n1=nx(Math.min(...xs)), n2=nx(Math.max(...xs)), L=Math.min(n1,n2), Rr=Math.max(n1,n2); if(Rr>L) rows.push({L, R:Rr, yr}); }
+    if(rows.length) lap=mkFinish(Object.assign(mkBase(g),{rows})); }
+  const btns=jk.holesHere?jk.btn.map(y=>[(nx(0)-m.minL)/spc, m.ribH+y]):[];
+  return {lap, btns}; }
 function mkArmW(a,o){ return {A:[o[0]+a.A[0],o[1]+a.A[1]], B:a.B?[o[0]+a.B[0],o[1]+a.B[1]]:null}; }
 function mkHalfSide(m, side){ const rows=[]; m.rows.forEach(r=>{ const L=side==='R'?Math.max(r.L,0):r.L, R=side==='L'?Math.min(r.R,0):r.R; if(R>L) rows.push({L,R,yr:r.yr}); });
   const o=Object.assign({}, m, {rows}); if(m.rib) o.rib={rows:m.rib.rows, L:side==='R'?Math.max(m.rib.L,0):m.rib.L, R:side==='L'?Math.min(m.rib.R,0):m.rib.R}; return mkFinish(o); }
@@ -10400,10 +10835,13 @@ function mkLayout(gk, P, list, g, view){
     if(front){ const F=mkFromSim(front.R,g); if(F){ add(F,{aw:[F.minL/F.spc,0], z:3, id:front.pc.id, name:front.pc.name}); const o=[F.minL/F.spc,0];
         SR=mkArmW(mkArm(F,'R',rag),o); SL=mkArmW(mkArm(F,'L',rag),o); } }
     else if(cf.length===2){ const ms=cf.map(x=>({x, m:mkFromSim(x.R,g)})).filter(o=>o.m);
-      if(ms.length===2){ ms.forEach(o=>{ const b=o.m.rows.filter(r=>r.yr===1)[0]||o.m.rows[0], t=o.m.rows.filter(r=>r.yr===o.m.maxY); const tl=Math.min(...t.map(r=>r.L)), tr=Math.max(...t.map(r=>r.R)); o.neckR=(b.R-tr)>(tl-b.L); o.b=b; });
-        const lp=ms.find(o=>o.neckR)||ms[0], rp=ms.find(o=>o!==lp); const f=P.priekis||{}, gap=(f.bandW||0)-(f.overlap||0);
+      if(ms.length===2){ const fl=gk==='svarkas'?ms.map(o=>mkJkFold(o.x.R,o.m,g,(P.apykakle||{}).collarW)):[null,null], fo=o=>fl[ms.indexOf(o)];
+        ms.forEach(o=>{ const b=o.m.rows.filter(r=>r.yr===1)[0]||o.m.rows[0], t=o.m.rows.filter(r=>r.yr===o.m.maxY); const tl=Math.min(...t.map(r=>r.L)), tr=Math.max(...t.map(r=>r.R)); o.neckR=(b.R-tr)>(tl-b.L); o.b=b; });
+        const lp=ms.find(o=>o.x.R&&o.x.R.geom&&o.x.R.geom.jk&&o.x.R.geom.jk.side==='L')||ms.find(o=>o.neckR)||ms[0], rp=ms.find(o=>o!==lp); const f=P.priekis||{}, gap=(f.bandW||0)-(f.overlap||0);
         const lo=[-gap/2-(lp.b.R-lp.m.minL)/lp.m.spc,0], ro=[gap/2-(rp.b.L-rp.m.minL)/rp.m.spc,0];
-        add(lp.m,{aw:lo, z:3, id:lp.x.pc.id, name:lp.x.pc.name}); add(rp.m,{aw:ro, z:4, id:rp.x.pc.id, name:rp.x.pc.name});
+        const top=(fo(lp)&&fo(lp).btns.length)?lp:rp, zl=top===lp?4:3, zr=top===lp?3:4; // priekis su skylutėmis – viršuje
+        add(lp.m,{aw:lo, z:zl, id:lp.x.pc.id, name:lp.x.pc.name, btns:fo(lp)&&fo(lp).btns}); add(rp.m,{aw:ro, z:zr, id:rp.x.pc.id, name:rp.x.pc.name, btns:fo(rp)&&fo(rp).btns});
+        [[lp,lo,zl+0.5],[rp,ro,zr+0.5]].forEach(([o,a,z])=>{ const f=fo(o); if(f&&f.lap) add(f.lap,{aw:[a[0]+(f.lap.minL-o.m.minL)/o.m.spc, a[1]+o.m.ribH], z, id:o.x.pc.id+'_2', name:o.x.pc.name, dim:0.06}); });
         SR=mkArmW(mkArm(rp.m,'R',rag),ro); SL=mkArmW(mkArm(lp.m,'L',rag),lo);
         if(gap>0.3){ const ce=lp.b.R; let yr=1; lp.m.rows.forEach(r=>{ if(r.R>=ce&&r.yr>yr) yr=r.yr; }); const hgt=lp.m.ribH+yr/lp.m.rpc;
           const btn=[]; const n=Math.max(0,Math.round(f.btnN||0)), b0=f.btnBottom||2, b1=hgt-(f.btnTop||2); for(let i=0;i<n;i++) btn.push(n===1?b0:b0+(b1-b0)*i/(n-1));
@@ -10475,7 +10913,7 @@ function mkRender(o){
     s=mkCap(s,(x1-x0),(y1-y0),mPx,capH);
     cv=document.createElement('canvas'); cv.width=Math.ceil(Math.max((x1-x0)*s+2*mPx, Math.min(Wpx, 4000))); cv.height=Math.ceil((y1-y0)*s+2*mPx+capH); c=cv.getContext('2d'); mkBg(c,cv);
     const offX=(cv.width-2*mPx-(x1-x0)*s)/2, X=x=>mPx+offX+(x-x0)*s, Y=y=>mPx+(y1-y)*s;
-    L.items.forEach(it=>{ const look=it.band?{band:true, buttons:it.buttons, sts:g.sts}:mkLookFor(D,hx,it.id.replace(/_2$/,''),(list.find(q=>q.pc.id===it.id.replace(/_2$/,''))||{}).R,g,{dim:it.dim||0});
+    L.items.forEach(it=>{ const look=it.band?{band:true, buttons:it.buttons, sts:g.sts}:mkLookFor(D,hx,it.id.replace(/_2$/,''),(list.find(q=>q.pc.id===it.id.replace(/_2$/,''))||{}).R,g,{dim:it.dim||0, btns:it.btns});
       if(it.band){ const k=mkLookFor(D,hx,'',null,g); look.ribHex=k.ribHex||k.main; look.btnHex=D.slots.length>1?hx[D.slots[1].key]:null; }
       const pcv=mkPieceCanvas(it.m,s,look); mkDrawItem(c,pcv,it,s,X,Y,dpr);
       out.pieces.push({id:it.id, name:it.name, cv:pcv, m:it.m, s}); });

@@ -1,5 +1,5 @@
 // Toveli – veikimas be interneto
-const CACHE = 'srp-v29';
+const CACHE = 'srp-v33';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png'];
 // Šriftai (fonts/*.woff2, failų vardai nekinta) – atskirame podėlyje 'purla-fonts', bendrame su spalvų programa: pirmiausia podėlis.
 // Įdiegiant iš anksto įrašomi lotyniški šriftai (veikia be interneto iškart); kiti (kirilica, Lora) – kai pirmą kartą prireikia.

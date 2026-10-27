@@ -1,5 +1,5 @@
 // Silver Reed pagalbininkas – veikimas be interneto
-const CACHE = 'spalvos-v23';
+const CACHE = 'spalvos-v27';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 // Ištrinami tik senesni spalvų programos podėliai (spalvos-v*); Toveli (srp-*) ir šriftų podėliai paliekami.
